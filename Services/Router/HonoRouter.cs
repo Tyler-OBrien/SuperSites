@@ -38,6 +38,12 @@ const app = new Hono()";
 
         }
 
+        public void Add404Route(StringBuilder stringBuilder, string responseCode)
+        {
+            stringBuilder.AppendLine(
+                $"app.get('*', async (c) => {{ {responseCode} }})");
+        }
+
         public void End(StringBuilder stringBuilder, bool fullWorker)
         {
             if (fullWorker)

@@ -44,6 +44,7 @@ WarmUpBlobs();";
     {
         var sb = new StringBuilder();
         var hashsUsed = new HashSet<string>();
+        string responseCode404 = null;
 
         bool hasKVOrR2 = String.IsNullOrWhiteSpace(KVNamespace) == false || String.IsNullOrWhiteSpace(R2BucketName);
 
@@ -80,6 +81,9 @@ WarmUpBlobs();";
 
                 routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
                 Console.WriteLine($"Adding route for {relativePath}, embedding in worker..");
+
+                if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
+                    responseCode404 = responseCode;
             }
             else
             {
@@ -119,9 +123,13 @@ WarmUpBlobs();";
                     $"return new Response({getResponseBodyCode}, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});";
 
                 routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
-
+                if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
+                    responseCode404 = responseCode;
             }
         }
+
+        if (responseCode404 != null)
+            routerToUse.Add404Route(sb, responseCode404);
 
         routerToUse.End(sb, true);
         // If this isn't an asset we should bundle, we will need to fetch it from KV later. For now, we'll just ignore.
