@@ -83,7 +83,7 @@ WarmUpBlobs();";
                 Console.WriteLine($"Adding route for {relativePath}, embedding in worker..");
 
                 if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                    responseCode404 = responseCode;
+                    responseCode404 = $"return new Response(globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});"; ;
             }
             else
             {
@@ -124,7 +124,7 @@ WarmUpBlobs();";
 
                 routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
                 if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                    responseCode404 = responseCode;
+                    responseCode404 = $"return new Response({getResponseBodyCode}, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});"; ;
             }
         }
 
