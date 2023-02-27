@@ -34,14 +34,14 @@ const app = new Hono()";
         public void AddRoute(StringBuilder stringBuilder, string relativePath, string fileHash, string responseCode)
         {
             stringBuilder.AppendLine(
-                $"app.get('/{relativePath}', async (c) => {{ {responseCode}  }})");
+                $"app.on(['GET', 'HEAD'],'/{relativePath}', async (c) => {{ {responseCode}  }})");
 
         }
 
         public void Add404Route(StringBuilder stringBuilder, string responseCode)
         {
             stringBuilder.AppendLine(
-                $"app.get('*', async (c) => {{ {responseCode} }})");
+                $"app.on(['GET', 'HEAD'],'*', async (c) => {{ {responseCode} }})");
         }
 
         public void End(StringBuilder stringBuilder, bool fullWorker)
