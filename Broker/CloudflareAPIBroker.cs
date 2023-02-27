@@ -10,10 +10,12 @@ namespace CloudflareWorkerBundler.Broker
     {
         private readonly HttpClient _httpClient;
 
+        public const string BASE_PATH = "/client/v4";
+
         public CloudflareAPIBroker(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://api.cloudflare.com/client/v4");
+            _httpClient.BaseAddress = new Uri("https://api.cloudflare.com");
         }
     }
 }

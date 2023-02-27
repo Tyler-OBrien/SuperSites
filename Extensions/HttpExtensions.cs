@@ -31,7 +31,7 @@ namespace CloudflareWorkerBundler.Extensions
             return null;
         }
 
-        public static async Task<APIResponse> ProcessHttpResponseAsync(this HttpResponseMessage httpResponse, string assetName)
+        public static async Task<APIResponse?> ProcessHttpResponseAsync(this HttpResponseMessage httpResponse, string assetName)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace CloudflareWorkerBundler.Extensions
                     return null;
                 }
 
-                if (response.Errors.Any())
+                if (response.Errors != null && response.Errors.Any())
                 {
                     foreach (var error in response.Errors)
                     {
@@ -62,7 +62,7 @@ namespace CloudflareWorkerBundler.Extensions
                     }
                     return null;
                 }
-                if (response.Messages.Any())
+                if (response.Messages != null && response.Messages.Any())
                 {
                     foreach (var message in response.Messages)
                     {
@@ -73,7 +73,7 @@ namespace CloudflareWorkerBundler.Extensions
                 if (response.Success == false)
                 {
                     Console.WriteLine("Response Success did not indicitate success");
-                    return;
+                    return null;
                 }
 
                 return response;

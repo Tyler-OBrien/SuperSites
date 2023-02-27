@@ -12,12 +12,17 @@ namespace CloudflareWorkerBundler.Broker
     public partial class CloudflareAPIBroker
     {
         public string R2GetRequestUri(string accountId, string bucketName) =>
-            $"/accounts/{accountId}/r2/buckets/{bucketName}";
+            $"{BASE_PATH}/accounts/{accountId}/r2/buckets/{bucketName}";
         public async Task<APIResponse> WriteR2(string objectName, byte[] value, string accountId, string bucketName, string apiToken,
             CancellationToken token)
         {
+
             var newContent = new ByteArrayContent(value);
-            var response = await _httpClient.PutAsync(R2GetRequestUri(accountId, bucketName) + $"/objects/{Uri.EscapeDataString(objectName)}", newContent, token);
+            var request = new HttpRequestMessage(HttpMethod.Put,
+                R2GetRequestUri(accountId, bucketName) + $"/objects/{Uri.EscapeDataString(objectName)}");
+            request.Headers.Add("Authorization", $"Bearer {apiToken}");
+            request.Content = newContent;
+            var response = await _httpClient.SendAsync(request, token);
             return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {objectName} in  R2 Bucket {bucketName}");
         }
     }

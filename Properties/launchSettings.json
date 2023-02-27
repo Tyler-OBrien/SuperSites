@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "CloudflareWorkerBundler": {
-      "commandName": "Project",
-      "commandLineArgs": "bundle",
-      "workingDirectory": "C:\\Users\\chaik\\sources\\repos\\personal_website\\public"
-    }
-  }
-}

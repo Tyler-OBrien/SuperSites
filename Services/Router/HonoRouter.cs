@@ -16,6 +16,11 @@ const app = new Hono()";
 
         public const string HONO_FOOTER = @"export default app";
 
+        public string EnvironmentVariableInsideRequest
+        {
+            get => "c.env.";
+        }
+
 
         public void Begin(StringBuilder stringBuilder, bool fullWorker)
         {
@@ -29,7 +34,7 @@ const app = new Hono()";
         public void AddRoute(StringBuilder stringBuilder, string relativePath, string fileHash, string responseCode)
         {
             stringBuilder.AppendLine(
-                $"app.get('/{relativePath}', (c) => {{ {responseCode}  }})");
+                $"app.get('/{relativePath}', async (c) => {{ {responseCode}  }})");
 
         }
 

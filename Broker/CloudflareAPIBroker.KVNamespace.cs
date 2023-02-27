@@ -12,12 +12,17 @@ namespace CloudflareWorkerBundler.Broker
     public partial class CloudflareAPIBroker
     {
         public string KVGetRequestUri(string accountId, string nameSpace) =>
-            $"/accounts/{accountId}/storage/kv/namespaces/{nameSpace}";
+            $"{BASE_PATH}/accounts/{accountId}/storage/kv/namespaces/{nameSpace}";
 
         public async Task<APIResponse> WriteKVPair(string key, byte[] value, string accountId, string nameSpaceId, string apiToken, CancellationToken token)
         {
+            
             var newContent = new ByteArrayContent(value);
-            var response = await _httpClient.PutAsync(KVGetRequestUri(accountId, nameSpaceId) + $"/values/{Uri.EscapeDataString(key)}", newContent, token);
+            var request = new HttpRequestMessage(HttpMethod.Put,
+                KVGetRequestUri(accountId, nameSpaceId) + $"/values/{Uri.EscapeDataString(key)}");
+            request.Headers.Add("Authorization", $"Bearer {apiToken}");
+            request.Content = newContent;
+            var response = await _httpClient.SendAsync(request, token);
             return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {key} key in KV Namespace {nameSpaceId}");
         }
     }

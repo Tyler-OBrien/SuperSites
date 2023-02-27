@@ -62,7 +62,7 @@ WarmUpBlobs();";
         {
 
             if (hasKVOrR2 == false || (fileExtensionsToBundle.Any(fileExtension =>
-                    file.Extension.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase)) && file.Length > bundleFileSizeLimit))
+                    file.Extension.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase)) && file.Length < bundleFileSizeLimit))
             {
                 var relativePath = GetRelativePath(file, directoryToBundle);
                 var getBytes = await File.ReadAllBytesAsync(file.FullName);
@@ -79,7 +79,7 @@ WarmUpBlobs();";
                     $"return new Response(globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});";
 
                 routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
-
+                Console.WriteLine($"Adding route for {relativePath}, embedding in worker..");
             }
             else
             {
@@ -94,15 +94,25 @@ WarmUpBlobs();";
 
                 if (r2 && file.Length > KVFileSizeLimit)
                 {
-                    await _apiBroker.WriteR2(relativePath, getBytes, accountId, R2BucketName, APIToken, CancellationToken.None);
-                    getResponseBodyCode = $"(await env.R2.get({relativePath})).body";
+                    if (await _apiBroker.WriteR2(relativePath, getBytes, accountId, R2BucketName, APIToken,
+                            CancellationToken.None) == null)
+                    {
+                        // Error, already printed, just abort..
+                        throw new InvalidOperationException("Failed to upload r2 asset..");
+                    }
+                    getResponseBodyCode = $"(await {routerToUse.EnvironmentVariableInsideRequest}R2.get(\"{relativePath}\")).body";
+                    Console.WriteLine($"Adding route for {relativePath}, uploaded to R2..");
                 }
                 else // KV!!
                 {
-                    await _apiBroker.WriteKVPair(relativePath, getBytes, accountId, KVNamespace, APIToken,
-                        CancellationToken.None);
-                    getResponseBodyCode = $"await env.KV.get({relativePath})";
-
+                    if (await _apiBroker.WriteKVPair(relativePath, getBytes, accountId, KVNamespace, APIToken,
+                            CancellationToken.None) == null)
+                    {
+                        // Error, already printed, just abort..
+                        throw new InvalidOperationException("Failed to upload KV asset..");
+                    }
+                    getResponseBodyCode = $"await {routerToUse.EnvironmentVariableInsideRequest}KV.get(\"{relativePath}\", {{cacheTtl: 86400, type: \"stream\" }})";
+                    Console.WriteLine($"Adding route for {relativePath}, uploaded to KV..");
                 }
 
                 var responseCode =
@@ -125,7 +135,7 @@ WarmUpBlobs();";
 
         sb.AppendLine(FOOTER.Trim());
 
-
+        Console.WriteLine($"Finished Bundled {filesToBundle.Count}, {hashsUsed.Count} of which are embedded in the Worker and will be warmed up on worker init!");
         return sb.ToString();
     }
 

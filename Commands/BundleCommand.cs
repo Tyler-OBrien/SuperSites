@@ -63,9 +63,9 @@ namespace CloudflareWorkerBundler.Commands
 
             AddOption(bundleFileSizeLimit);
 
-            var KvNamespace = new Option<string>("--KvNameSpace")
+            var KvNamespace = new Option<string>("--KvNamespace")
             {
-                Name = "--KvNameSpace",
+                Name = "--KvNamespace",
                 Description = "KV Namespace ID, to use for files that aren't included in bundle",
                 IsRequired = false
             };
@@ -149,6 +149,10 @@ namespace CloudflareWorkerBundler.Commands
 
             foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
             {
+                if (directory.ToString().Equals(Environment.CurrentDirectory))
+                {
+                    if (file.Name.Equals(outputFileName)) continue;
+                }
                 if (file.Name.EndsWith(".ignore") == false)
                 {
                     getFileInfo.Add(file);
