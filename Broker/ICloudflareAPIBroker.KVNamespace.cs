@@ -10,6 +10,6 @@ namespace CloudflareWorkerBundler.Broker
     public partial interface ICloudflareAPIBroker
     {
 
-        Task<APIResponse> WriteKVPair(string key, byte[] value, string accountId, string nameSpaceId, string apiToken, CancellationToken token);
+        Task<APIResponseBase> WriteKVPair(string key, byte[] value, string accountId, string nameSpaceId, string apiToken, CancellationToken token);
     }
 }

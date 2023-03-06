@@ -9,7 +9,7 @@ namespace CloudflareWorkerBundler.Broker
 {
     public partial interface ICloudflareAPIBroker
     {
-        Task<APIResponse> WriteR2(string objectName, byte[] value, string accountId, string bucketName, string apiToken, CancellationToken token);
+        Task<APIResponseBase> WriteR2(string objectName, byte[] value, string accountId, string bucketName, string apiToken, CancellationToken token);
 
     }
 }

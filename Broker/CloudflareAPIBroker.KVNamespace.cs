@@ -14,7 +14,7 @@ namespace CloudflareWorkerBundler.Broker
         public string KVGetRequestUri(string accountId, string nameSpace) =>
             $"{BASE_PATH}/accounts/{accountId}/storage/kv/namespaces/{nameSpace}";
 
-        public async Task<APIResponse> WriteKVPair(string key, byte[] value, string accountId, string nameSpaceId, string apiToken, CancellationToken token)
+        public async Task<APIResponseBase> WriteKVPair(string key, byte[] value, string accountId, string nameSpaceId, string apiToken, CancellationToken token)
         {
             
             var newContent = new ByteArrayContent(value);

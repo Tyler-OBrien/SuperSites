@@ -13,7 +13,7 @@ namespace CloudflareWorkerBundler.Broker
     {
         public string R2GetRequestUri(string accountId, string bucketName) =>
             $"{BASE_PATH}/accounts/{accountId}/r2/buckets/{bucketName}";
-        public async Task<APIResponse> WriteR2(string objectName, byte[] value, string accountId, string bucketName, string apiToken,
+        public async Task<APIResponseBase> WriteR2(string objectName, byte[] value, string accountId, string bucketName, string apiToken,
             CancellationToken token)
         {
 
@@ -25,5 +25,17 @@ namespace CloudflareWorkerBundler.Broker
             var response = await _httpClient.SendAsync(request, token);
             return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {objectName} in  R2 Bucket {bucketName}");
         }
+
+        public async Task<APIResponse<KVResult, KVResultInfo>> ListR2(string cursor, string accountId, string bucketName, string apiToken,
+            CancellationToken token)
+        {
+            string cursorQueryString = String.IsNullOrWhiteSpace(cursor) ? string.Empty : $"?cursor={cursor}";
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                R2GetRequestUri(accountId, bucketName) + $"/objects/{cursorQueryString}");
+            request.Headers.Add("Authorization", $"Bearer {apiToken}");
+            var response = await _httpClient.SendAsync(request, token);
+            return await HttpExtensions.ProcessHttpResponseAsync<KVResult, KVResultInfo>(response, $"Get R2 bucket List {bucketName}");
+        }
+
     }
 }
