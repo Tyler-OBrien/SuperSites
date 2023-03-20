@@ -49,13 +49,13 @@ Preload();";
     public async Task<string> ProduceBundle(IRouter routerToUse, DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle)
     {
         var sb = new StringBuilder();
-        sb.Append($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
-        sb.Append($"// {filesToBundle.Count} Files found");
+        sb.AppendLine($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
+        sb.AppendLine($"// {filesToBundle.Count} Files found");
         List<string> preloadCodes = new List<string>();
         string responseCode404 = null;
 
         var storages = await _storageCreatorService.GetStorages();
-        sb.Append($"// {storages.Count} Storages Configured.");
+        sb.AppendLine($"// {storages.Count} Storages Configured.");
 
 
 
@@ -104,7 +104,7 @@ Preload();";
             }
 
             var headers = tryPutFile.ResponseHeaders.Select(header =>
-                $", '{header.Key.Replace("'", "\\'")}': {header.Value.Replace("'", "\\'")}");
+                $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'");
 
             var responseCode =
                 $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(fileName)}' {String.Join("", headers)} }}}});";
