@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CloudflareWorkerBundler.Models.CloudflareAPI
 {
 
-    public class APIResponseNoPagination<T> : APIResponse<T, object>
+    public class ApiResponseNoPagination<T> : ApiResponse<T, object>
     {
         [JsonPropertyName("result")]
         public T Result { get; set; }
@@ -24,7 +24,7 @@ namespace CloudflareWorkerBundler.Models.CloudflareAPI
         public string[] Messages { get; set; }
     }
 
-    public class APIResponseBase
+    public interface ApiResponseBase
     {
 
         [JsonPropertyName("success")]
@@ -38,7 +38,7 @@ namespace CloudflareWorkerBundler.Models.CloudflareAPI
     }
 
 
-    public class APIResponse<TResult, TResultInfo> : APIResponseBase
+    public class ApiResponse<TResult, TResultInfo> : ApiResponseBase
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("result")]
@@ -59,7 +59,7 @@ namespace CloudflareWorkerBundler.Models.CloudflareAPI
         public TResultInfo ResultInfo { get; set; }
     }
 
-    public class APIResponse
+    public class ApiResponse
     {
         [JsonPropertyName("success")]
         public bool Success { get; set; }

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace CloudflareWorkerBundler.Broker
 {
-    public partial class CloudflareAPIBroker : ICloudflareAPIBroker
+    public partial class CloudflareApiBroker : ICloudflareApiBroker
     {
         private readonly HttpClient _httpClient;
 
-        public const string BASE_PATH = "/client/v4";
+        public const string BasePath = "/client/v4";
 
-        public CloudflareAPIBroker(HttpClient httpClient)
+        public CloudflareApiBroker(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _httpClient.BaseAddress = new Uri("https://api.cloudflare.com");

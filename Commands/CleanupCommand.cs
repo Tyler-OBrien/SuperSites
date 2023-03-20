@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudflareWorkerBundler.Services.Storage
+namespace CloudflareWorkerBundler.Commands
 {
-    internal class R2Storage
+    internal class CleanupCommand
     {
     }
 }

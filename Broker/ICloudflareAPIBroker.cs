@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloudflareWorkerBundler.Broker
 {
-    public partial interface ICloudflareAPIBroker
+    public partial interface ICloudflareApiBroker
     {
     }
 }

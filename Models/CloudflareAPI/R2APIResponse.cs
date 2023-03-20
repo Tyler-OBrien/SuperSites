@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CloudflareWorkerBundler.Models.CloudflareAPI
 {
-    public partial class R2ApiResponse : APIResponse<R2Result, R2ResultInfo>
+    public partial class R2ApiResponse : ApiResponse<R2Result, R2ResultInfo>
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("success")]

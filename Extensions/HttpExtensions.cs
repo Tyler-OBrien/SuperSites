@@ -32,14 +32,15 @@ namespace CloudflareWorkerBundler.Extensions
         }
 
 
-        public static async Task<APIResponseBase?> ProcessHttpResponseAsync(this HttpResponseMessage httpResponse,
+        public static async Task<ApiResponseBase?> ProcessHttpResponseAsync(this HttpResponseMessage httpResponse,
             string assetName)
         {
             var response = await ProcessHttpResponseAsync<object?, object>(httpResponse, assetName);
             return response;
         }
 
-        public static async Task<APIResponse<TResult, TResultInfo>?> ProcessHttpResponseAsync<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName)
+
+        public static async Task<ApiResponse<TResult[], TResultInfo>?> ProcessHttpResponseAsyncList<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName)
         {
             try
             {
@@ -53,7 +54,68 @@ namespace CloudflareWorkerBundler.Extensions
                     return null;
                 }
 
-                var response = JsonSerializer.Deserialize<APIResponse<TResult, TResultInfo>>(rawString);
+                var response = JsonSerializer.Deserialize<ApiResponse<TResult[], TResultInfo>>(rawString);
+
+                if (response == null)
+                {
+                    Console.WriteLine($"Could not get response {assetName} from API");
+                    return null;
+                }
+
+                if (response.Errors != null && response.Errors.Any())
+                {
+                    foreach (var error in response.Errors)
+                    {
+                        Console.WriteLine($"Error with {assetName}: {error}");
+
+                    }
+                    return null;
+                }
+                if (response.Messages != null && response.Messages.Any())
+                {
+                    foreach (var message in response.Messages)
+                    {
+                        Console.WriteLine($"API Returned Message with {assetName}: {message}");
+                    }
+                }
+
+                if (response.Success == false)
+                {
+                    Console.WriteLine("Response Success did not indicitate success");
+                    return null;
+                }
+
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                Console.WriteLine($"Unexpected HTTP Error: API Returned: {httpResponse?.StatusCode} - {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Console.WriteLine($"Unexpected Error: API Returned: {httpResponse?.StatusCode}");
+            }
+
+            return null;
+        }
+
+        public static async Task<ApiResponse<TResult, TResultInfo>?> ProcessHttpResponseAsync<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName)
+        {
+            try
+            {
+                var rawString = await httpResponse.Content.ReadAsStringAsync();
+
+
+                if (string.IsNullOrWhiteSpace(rawString))
+                {
+                    Console.WriteLine(
+                        $"Could not get response {assetName} from API, API returned nothing, Status Code: {httpResponse.StatusCode}");
+                    return null;
+                }
+
+                var response = JsonSerializer.Deserialize<ApiResponse<TResult, TResultInfo>>(rawString);
 
                 if (response == null)
                 {

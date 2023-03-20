@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace CloudflareWorkerBundler.Models.CloudflareAPI
 {
-    public partial class KvapiResponse : APIResponse<KVResult, KVResultInfo>
+    public partial class KvapiResponse : ApiResponse<KvResult, KvResultInfo>
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("result")]
-        public KVResult[] Result { get; set; }
+        public KvResult[] Result { get; set; }
 
         [JsonPropertyName("success")]
         public bool Success { get; set; }
@@ -26,17 +26,17 @@ namespace CloudflareWorkerBundler.Models.CloudflareAPI
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("result_info")]
-        public KVResultInfo ResultInfo { get; set; }
+        public KvResultInfo ResultInfo { get; set; }
     }
 
-    public partial class KVResult
+    public partial class KvResult
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 
-    public partial class KVResultInfo
+    public partial class KvResultInfo
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("count")]

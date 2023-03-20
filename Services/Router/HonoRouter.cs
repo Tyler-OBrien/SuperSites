@@ -9,12 +9,12 @@ namespace CloudflareWorkerBundler.Services.Router
     public class HonoRouter : IRouter
     {
 
-        public const string HONO_HEADER =
+        public const string HonoHeader =
             @"
 import { Hono } from 'hono'
 const app = new Hono()";
 
-        public const string HONO_FOOTER = @"export default app";
+        public const string HonoFooter = @"export default app";
 
         public string EnvironmentVariableInsideRequest
         {
@@ -26,7 +26,7 @@ const app = new Hono()";
         {
             if (fullWorker)
             {
-                stringBuilder.AppendLine(HONO_HEADER.Trim());
+                stringBuilder.AppendLine(HonoHeader.Trim());
             }
 
         }
@@ -48,7 +48,7 @@ const app = new Hono()";
         {
             if (fullWorker)
             {
-                stringBuilder.AppendLine(HONO_FOOTER.Trim());
+                stringBuilder.AppendLine(HonoFooter.Trim());
             }
         }
     }

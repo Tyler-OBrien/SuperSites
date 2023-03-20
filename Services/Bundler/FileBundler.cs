@@ -1,25 +1,31 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using CloudflareWorkerBundler.Broker;
+using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Services.Router;
+using CloudflareWorkerBundler.Services.Storage;
 using Microsoft.AspNetCore.StaticFiles;
 
 namespace CloudflareWorkerBundler.Services.Bundler;
 
 public class FileBundler : IFileBundler
 {
-    private readonly ICloudflareAPIBroker _apiBroker;
 
-    public FileBundler(ICloudflareAPIBroker apiBroker)
+    private readonly IBaseConfiguration _baseConfiguration;
+
+    private readonly IStorageCreatorService _storageCreatorService;
+
+    public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService)
     {
-        _apiBroker = apiBroker;
+        _baseConfiguration = baseConfiguration;
+        _storageCreatorService = storageCreatorService;
     }
 
 
-    public const string FILE_VARIABLE_PREFIX = "file";
+    public const string FileVariablePrefix = "file";
 
 
-    public const string HEADER =
+    public const string Header =
         @"
 //https://stackoverflow.com/questions/27980612/converting-base64-to-blob-in-javascript
 function b64toBlob(base64) {
@@ -35,115 +41,100 @@ function b64toBlob(base64) {
 }
 ";
 
-    public const string FOOTER = @"
-WarmUpBlobs();";
+    public const string Footer = @"
+Preload();";
 
-    public const string INDEX_HTML = "index.html";
+    public const string IndexHtml = "index.html";
 
-    public async Task<string> ProduceBundle(IRouter routerToUse, DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle, string[] fileExtensionsToBundle, long bundleFileSizeLimit, string KVNamespace, long KVFileSizeLimit, string R2BucketName, string APIToken, string accountId)
+    public async Task<string> ProduceBundle(IRouter routerToUse, DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle)
     {
         var sb = new StringBuilder();
-        var hashsUsed = new HashSet<string>();
+        sb.Append($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
+        sb.Append($"// {filesToBundle.Count} Files found");
+        List<string> preloadCodes = new List<string>();
         string responseCode404 = null;
 
-        bool hasKVOrR2 = String.IsNullOrWhiteSpace(KVNamespace) == false || String.IsNullOrWhiteSpace(R2BucketName);
+        var storages = await _storageCreatorService.GetStorages();
+        sb.Append($"// {storages.Count} Storages Configured.");
 
-        if (String.IsNullOrWhiteSpace(APIToken) && hasKVOrR2)
-        {
-            Console.Write("You have R2 or KV Specified, but no API Token. Will treat this as you want to bundle everything into the worker.");
-            hasKVOrR2 = false;
-        }
 
 
         // Write Header first
+        sb.AppendLine("// Router Header Below");
         routerToUse.Begin(sb, true);
-        sb.AppendLine(HEADER.Trim());
+        sb.AppendLine($"{Environment.NewLine}// Router Header End");
 
-        foreach (var file in filesToBundle)
+
+        foreach (var storage in storages.DistinctBy(storage => storage.Configuration.InstanceType))
         {
-
-            if (hasKVOrR2 == false || (fileExtensionsToBundle.Any(fileExtension =>
-                    file.Extension.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase)) && file.Length < bundleFileSizeLimit))
+            if (String.IsNullOrWhiteSpace(storage.Header) == false)
             {
-                var relativePath = GetRelativePath(file, directoryToBundle);
-                var getBytes = await File.ReadAllBytesAsync(file.FullName);
-                var fileHash = BitConverter.ToString(SHA256.HashData(getBytes)).Replace("-", "")
-                    .ToLowerInvariant();
-                if (hashsUsed.Contains(fileHash) == false)
-                {
-                    hashsUsed.Add(fileHash);
-                    sb.AppendLine($"let {FILE_VARIABLE_PREFIX}{fileHash} = \"{Convert.ToBase64String(getBytes)}\"");
-                }
-
-
-                var responseCode =
-                    $"return new Response(globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});";
-
-                routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
-                Console.WriteLine($"Adding route for {relativePath}, embedding in worker..");
-
-                if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                    responseCode404 = $"return new Response(globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});"; ;
+                sb.AppendLine($"// {storage.Configuration.InstanceType} Storage Header Below");
+                sb.AppendLine(storage.Header.Trim());
+                sb.AppendLine($"{Environment.NewLine}// {storage.Configuration.InstanceType} Storage Header End");
             }
-            else
+        }
+
+        foreach (var fileInfo in filesToBundle)
+        {
+            var relativePath = GetRelativePath(fileInfo, directoryToBundle);
+            var fileName = fileInfo.Name;
+            var getBytes = await File.ReadAllBytesAsync(fileInfo.FullName);
+            var fileHash = BitConverter.ToString(SHA256.HashData(getBytes)).Replace("-", "")
+                .ToLowerInvariant();
+            var trySelectStorage = storages.FirstOrDefault(storage => storage.StoreFile(fileInfo));
+            if (trySelectStorage == null)
             {
-                var relativePath = GetRelativePath(file, directoryToBundle);
-                var getBytes = await File.ReadAllBytesAsync(file.FullName);
-                var fileHash = BitConverter.ToString(SHA256.HashData(getBytes)).Replace("-", "")
-                    .ToLowerInvariant();
-                bool r2 = String.IsNullOrWhiteSpace(R2BucketName) == false;
-                // Upload first..
-
-                string getResponseBodyCode = "";
-
-                if (r2 && file.Length > KVFileSizeLimit)
-                {
-                    if (await _apiBroker.WriteR2(relativePath, getBytes, accountId, R2BucketName, APIToken,
-                            CancellationToken.None) == null)
-                    {
-                        // Error, already printed, just abort..
-                        throw new InvalidOperationException("Failed to upload r2 asset..");
-                    }
-                    getResponseBodyCode = $"(await {routerToUse.EnvironmentVariableInsideRequest}R2.get(\"{relativePath}\")).body";
-                    Console.WriteLine($"Adding route for {relativePath}, uploaded to R2..");
-                }
-                else // KV!!
-                {
-                    if (await _apiBroker.WriteKVPair(relativePath, getBytes, accountId, KVNamespace, APIToken,
-                            CancellationToken.None) == null)
-                    {
-                        // Error, already printed, just abort..
-                        throw new InvalidOperationException("Failed to upload KV asset..");
-                    }
-                    getResponseBodyCode = $"await {routerToUse.EnvironmentVariableInsideRequest}KV.get(\"{relativePath}\", {{cacheTtl: 86400, type: \"stream\" }})";
-                    Console.WriteLine($"Adding route for {relativePath}, uploaded to KV..");
-                }
-
-                var responseCode =
-                    $"return new Response({getResponseBodyCode}, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});";
-
-                routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
-                if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                    responseCode404 = $"return new Response({getResponseBodyCode}, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(file.Name)}' }}}});"; ;
+                // Throw an exception
+                throw new InvalidOperationException($"Failed to find storage for file {fileInfo.Name}, length: {fileInfo.Length}, extension: {fileInfo.Extension}");
             }
+
+            var tryPutFile = await trySelectStorage.Write(routerToUse, fileHash, getBytes, fileName);
+
+            
+
+            if (tryPutFile.ResponseHeaders.ContainsKey("ETag") == false)
+            {
+                tryPutFile.ResponseHeaders.Add("ETag", $"{fileHash}");
+            }
+
+            if (String.IsNullOrWhiteSpace(tryPutFile.GlobalCode) == false)
+            {
+                sb.AppendLine(tryPutFile.GlobalCode);
+            }
+
+            var headers = tryPutFile.ResponseHeaders.Select(header =>
+                $", '{header.Key.Replace("'", "\\'")}': {header.Value.Replace("'", "\\'")}");
+
+            var responseCode =
+                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(fileName)}' {String.Join("", headers)} }}}});";
+
+
+            routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
+            Console.WriteLine($"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
+
+            if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
+                responseCode404 = $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(fileName)}' {String.Join("", headers)} }}}});";
+
+            if (String.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
+                preloadCodes.Add(tryPutFile.PreloadCode);
+
         }
 
         if (responseCode404 != null)
             routerToUse.Add404Route(sb, responseCode404);
 
         routerToUse.End(sb, true);
-        // If this isn't an asset we should bundle, we will need to fetch it from KV later. For now, we'll just ignore.
         // Ok now let's warm up all of the blobs :)
-        sb.AppendLine("function WarmUpBlobs() {");
-        foreach (var hashToWarm in hashsUsed)
-            sb.AppendLine(
-                $"    globalThis.{FILE_VARIABLE_PREFIX}{hashToWarm}blob = b64toBlob({FILE_VARIABLE_PREFIX}{hashToWarm});");
+        sb.AppendLine("function Preload() {");
+        foreach (var preloadCode in preloadCodes)
+            sb.AppendLine(preloadCode);
 
         sb.AppendLine("}");
 
-        sb.AppendLine(FOOTER.Trim());
+        sb.AppendLine(Footer.Trim());
 
-        Console.WriteLine($"Finished Bundled {filesToBundle.Count}, {hashsUsed.Count} of which are embedded in the Worker and will be warmed up on worker init!");
+        Console.WriteLine($"Finished Bundled {filesToBundle.Count} of which are embedded in the Worker and will be warmed up on worker init!");
         return sb.ToString();
     }
 
@@ -158,11 +149,11 @@ WarmUpBlobs();";
     public string GetRelativePath(FileInfo file, DirectoryInfo baseDirectory)
     {
         var cleanedFilePath = file.FullName.Replace(baseDirectory.FullName, "").TrimStart('\\').Replace("\\", "/");
-        if (cleanedFilePath.EndsWith(INDEX_HTML))
+        if (cleanedFilePath.EndsWith(IndexHtml))
         {
-            var lastIndexOf = cleanedFilePath.LastIndexOf(INDEX_HTML);
+            var lastIndexOf = cleanedFilePath.LastIndexOf(IndexHtml);
             if (lastIndexOf != -1)
-                cleanedFilePath = cleanedFilePath.Remove(lastIndexOf, INDEX_HTML.Length);
+                cleanedFilePath = cleanedFilePath.Remove(lastIndexOf, IndexHtml.Length);
         }
 
         return cleanedFilePath;
