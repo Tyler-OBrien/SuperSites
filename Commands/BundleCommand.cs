@@ -58,7 +58,6 @@ namespace CloudflareWorkerBundler.Commands
 
 
 
-            router = new HonoRouter();
 
 
 
@@ -78,7 +77,7 @@ namespace CloudflareWorkerBundler.Commands
             }
 
 
-            var outputFile = await _fileBundler.ProduceBundle(router, directory, getFileInfo);
+            var outputFile = await _fileBundler.ProduceBundle(directory, getFileInfo);
 
             await File.WriteAllTextAsync(outputFileName, outputFile);
             Console.ReadKey(true);

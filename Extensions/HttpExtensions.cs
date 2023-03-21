@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Extensions
 {
@@ -33,14 +34,14 @@ namespace CloudflareWorkerBundler.Extensions
 
 
         public static async Task<ApiResponseBase?> ProcessHttpResponseAsync(this HttpResponseMessage httpResponse,
-            string assetName)
+            string assetName, ILogger logger)
         {
-            var response = await ProcessHttpResponseAsync<object?, object>(httpResponse, assetName);
+            var response = await ProcessHttpResponseAsync<object?, object>(httpResponse, assetName, logger);
             return response;
         }
 
 
-        public static async Task<ApiResponse<TResult[], TResultInfo>?> ProcessHttpResponseAsyncList<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName)
+        public static async Task<ApiResponse<TResult[], TResultInfo>?> ProcessHttpResponseAsyncList<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName, ILogger logger)
         {
             try
             {
@@ -49,7 +50,7 @@ namespace CloudflareWorkerBundler.Extensions
 
                 if (string.IsNullOrWhiteSpace(rawString))
                 {
-                    Console.WriteLine(
+                    logger.LogCritical(
                         $"Could not get response {assetName} from API, API returned nothing, Status Code: {httpResponse.StatusCode}");
                     return null;
                 }
@@ -58,7 +59,7 @@ namespace CloudflareWorkerBundler.Extensions
 
                 if (response == null)
                 {
-                    Console.WriteLine($"Could not get response {assetName} from API");
+                    logger.LogCritical($"Could not get response {assetName} from API");
                     return null;
                 }
 
@@ -66,7 +67,7 @@ namespace CloudflareWorkerBundler.Extensions
                 {
                     foreach (var error in response.Errors)
                     {
-                        Console.WriteLine($"Error with {assetName}: {error}");
+                        logger.LogCritical($"Error with {assetName}: {error}");
 
                     }
                     return null;
@@ -75,13 +76,13 @@ namespace CloudflareWorkerBundler.Extensions
                 {
                     foreach (var message in response.Messages)
                     {
-                        Console.WriteLine($"API Returned Message with {assetName}: {message}");
+                        logger.LogCritical($"API Returned Message with {assetName}: {message}");
                     }
                 }
 
                 if (response.Success == false)
                 {
-                    Console.WriteLine("Response Success did not indicitate success");
+                    logger.LogCritical("Response Success did not indicitate success");
                     return null;
                 }
 
@@ -89,19 +90,17 @@ namespace CloudflareWorkerBundler.Extensions
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine(ex);
-                Console.WriteLine($"Unexpected HTTP Error: API Returned: {httpResponse?.StatusCode} - {ex.Message}");
+                logger.LogCritical(ex, $"Unexpected HTTP Error: API Returned: {httpResponse?.StatusCode} - {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                Console.WriteLine($"Unexpected Error: API Returned: {httpResponse?.StatusCode}");
+                logger.LogCritical(ex, $"Unexpected Error: API Returned: {httpResponse?.StatusCode}");
             }
 
             return null;
         }
 
-        public static async Task<ApiResponse<TResult, TResultInfo>?> ProcessHttpResponseAsync<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName)
+        public static async Task<ApiResponse<TResult, TResultInfo>?> ProcessHttpResponseAsync<TResult, TResultInfo>(this HttpResponseMessage httpResponse, string assetName, ILogger logger)
         {
             try
             {
@@ -110,7 +109,7 @@ namespace CloudflareWorkerBundler.Extensions
 
                 if (string.IsNullOrWhiteSpace(rawString))
                 {
-                    Console.WriteLine(
+                    logger.LogCritical(
                         $"Could not get response {assetName} from API, API returned nothing, Status Code: {httpResponse.StatusCode}");
                     return null;
                 }
@@ -119,7 +118,7 @@ namespace CloudflareWorkerBundler.Extensions
 
                 if (response == null)
                 {
-                    Console.WriteLine($"Could not get response {assetName} from API");
+                    logger.LogCritical($"Could not get response {assetName} from API");
                     return null;
                 }
 
@@ -127,7 +126,7 @@ namespace CloudflareWorkerBundler.Extensions
                 {
                     foreach (var error in response.Errors)
                     {
-                        Console.WriteLine($"Error with {assetName}: {error}");
+                        logger.LogCritical($"Error with {assetName}: {error}");
 
                     }
                     return null;
@@ -136,13 +135,13 @@ namespace CloudflareWorkerBundler.Extensions
                 {
                     foreach (var message in response.Messages)
                     {
-                        Console.WriteLine($"API Returned Message with {assetName}: {message}");
+                        logger.LogCritical($"API Returned Message with {assetName}: {message}");
                     }
                 }
 
                 if (response.Success == false)
                 {
-                    Console.WriteLine("Response Success did not indicitate success");
+                    logger.LogCritical("Response Success did not indicitate success");
                     return null;
                 }
 
@@ -150,13 +149,11 @@ namespace CloudflareWorkerBundler.Extensions
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine(ex);
-                Console.WriteLine($"Unexpected HTTP Error: API Returned: {httpResponse?.StatusCode} - {ex.Message}");
+                logger.LogCritical(ex, $"Unexpected HTTP Error: API Returned: {httpResponse?.StatusCode} - {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                Console.WriteLine($"Unexpected Error: API Returned: {httpResponse?.StatusCode}");
+                logger.LogCritical(ex, $"Unexpected Error: API Returned: {httpResponse?.StatusCode}");
             }
 
             return null;

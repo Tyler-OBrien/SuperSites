@@ -23,7 +23,7 @@ namespace CloudflareWorkerBundler.Broker
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             request.Content = newContent;
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {objectName} in  R2 Bucket {bucketName}");
+            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {objectName} in  R2 Bucket {bucketName}", _logger);
         }
 
         public async Task<ApiResponse<KvResult[], KvResultInfo>> ListR2(string cursor, string accountId, string bucketName, string apiToken,
@@ -34,7 +34,7 @@ namespace CloudflareWorkerBundler.Broker
                 R2GetRequestUri(accountId, bucketName) + $"/objects/{cursorQueryString}");
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsyncList<KvResult, KvResultInfo>(response, $"Get R2 bucket List {bucketName}");
+            return await HttpExtensions.ProcessHttpResponseAsyncList<KvResult, KvResultInfo>(response, $"Get R2 bucket List {bucketName}", _logger);
         }
 
 
@@ -46,7 +46,7 @@ namespace CloudflareWorkerBundler.Broker
                 R2GetRequestUri(accountId, bucketName) + $"/objects/{Uri.EscapeDataString(objectName)}");
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Delete {objectName} in  R2 Bucket {bucketName}");
+            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Delete {objectName} in  R2 Bucket {bucketName}", _logger);
         }
 
     }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Services.Router;
+using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Storage.Storages
 {
@@ -33,9 +34,15 @@ function b64toBlob(base64) {
 ";
 
         private readonly EmbeddedStorageConfiguration _configuration;
-        public EmbeddedStorage(EmbeddedStorageConfiguration storageConfiguration)
+
+        private readonly ILogger _logger;
+
+        private readonly IBaseConfiguration _baseConfiguration;
+        public EmbeddedStorage(EmbeddedStorageConfiguration storageConfiguration, IBaseConfiguration baseConfiguration, ILogger<EmbeddedStorage> logger)
         {
             _configuration = storageConfiguration;
+            _logger = logger;
+            _baseConfiguration = baseConfiguration;
         }
 
 

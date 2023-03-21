@@ -71,8 +71,8 @@ public static class Program
 
         services.AddScoped<IFileBundler, FileBundler>();
         services.AddScoped<IStorageCreatorService, StorageCreatorService>();
-        services.AddLogging();
-
+        services.AddScoped<IRouterCreatorService, RouterCreatorService>();
+        services.AddLogging(builder => builder.AddSerilog());
         return services.BuildServiceProvider();
     }
 

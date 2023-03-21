@@ -20,6 +20,10 @@ namespace CloudflareWorkerBundler.Models.Configuration
         [ConfigurationEnvironmentVariableProperty(("OUTPUT_LOCATION"))]
         public string OutputLocation { get; set; }
 
+        [ConfigurationEnvironmentVariableProperty("Router")]
+        public string Router { get; set; }
+
+
 
         [ConfigurationEnvironmentVariableProperty(("VERBOSE"))]
         public bool Verbose { get; set; }

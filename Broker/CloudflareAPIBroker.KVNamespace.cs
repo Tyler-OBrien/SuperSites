@@ -23,7 +23,7 @@ namespace CloudflareWorkerBundler.Broker
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             request.Content = newContent;
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {key} key in KV Namespace {nameSpaceId}");
+            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Put {key} key in KV Namespace {nameSpaceId}", _logger);
         }
 
         public async Task<ApiResponse<KvResult[], KvResultInfo>> ListKv(string cursor, string accountId, string nameSpaceId, string apiToken,
@@ -34,7 +34,7 @@ namespace CloudflareWorkerBundler.Broker
                 KvGetRequestUri(accountId, nameSpaceId) + $"/keys{cursorQueryString}");
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsyncList<KvResult, KvResultInfo>(response, $"Get KV Keys List");
+            return await HttpExtensions.ProcessHttpResponseAsyncList<KvResult, KvResultInfo>(response, $"Get KV Keys List", _logger);
         }
 
         public async Task<ApiResponseBase> DeleteKv(string key, string accountId, string nameSpaceId, string apiToken, CancellationToken token)
@@ -43,7 +43,7 @@ namespace CloudflareWorkerBundler.Broker
                 KvGetRequestUri(accountId, nameSpaceId) + $"/values/{Uri.EscapeDataString(key)}");
             request.Headers.Add("Authorization", $"Bearer {apiToken}");
             var response = await _httpClient.SendAsync(request, token);
-            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Delete {key} key in KV Namespace {nameSpaceId}");
+            return await HttpExtensions.ProcessHttpResponseAsync(response, $"Delete {key} key in KV Namespace {nameSpaceId}", _logger);
         }
     }
 }

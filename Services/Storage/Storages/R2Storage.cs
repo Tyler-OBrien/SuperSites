@@ -2,6 +2,7 @@
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Models.Configuration.Storage;
 using CloudflareWorkerBundler.Services.Router;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +18,16 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
 
         private readonly ICloudflareApiBroker _apiBroker;
 
-        public R2Storage(R2StorageConfiguration storageConfiguration, ICloudflareApiBroker apiBroker)
+        private readonly ILogger _logger;
+
+        private readonly IBaseConfiguration _baseConfiguration;
+
+        public R2Storage(R2StorageConfiguration storageConfiguration, ICloudflareApiBroker apiBroker, IBaseConfiguration baseConfiguration, ILogger<R2Storage> logger)
         {
             _configuration = storageConfiguration;
             _apiBroker = apiBroker;
+            _logger = logger;
+            _baseConfiguration = baseConfiguration;
         }
 
 
@@ -30,11 +37,15 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
         public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName)
         {
             var newStorageResponse = new StorageResponse();
-            var response = await _apiBroker.WriteR2(fileHash, value, _configuration.AccountId, _configuration.BucketName,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
+            if (_baseConfiguration.DryRun == false)
             {
-                throw new InvalidOperationException($"Failed to upload {response}");
+                var response = await _apiBroker.WriteR2(fileHash, value, _configuration.AccountId,
+                    _configuration.BucketName,
+                    _configuration.ApiToken, CancellationToken.None);
+                if (response == null || response.Success == false)
+                {
+                    throw new InvalidOperationException($"Failed to upload {response}");
+                }
             }
 
             newStorageResponse.GenerateResponseCode = $"(await {router.EnvironmentVariableInsideRequest}{_configuration.BindingName}.get(\"{fileHash}\")).body";
@@ -43,12 +54,17 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
 
         public async Task<bool> Delete(string objectName)
         {
-            var response = await _apiBroker.DeleteR2(objectName, _configuration.AccountId, _configuration.BucketName,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
+            if (_baseConfiguration.DryRun == false)
             {
-                throw new InvalidOperationException($"Failed to delete {response}");
+                var response = await _apiBroker.DeleteR2(objectName, _configuration.AccountId,
+                    _configuration.BucketName,
+                    _configuration.ApiToken, CancellationToken.None);
+                if (response == null || response.Success == false)
+                {
+                    throw new InvalidOperationException($"Failed to delete {response}");
+                }
             }
+
             return true;
         }
 

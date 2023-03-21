@@ -1,13 +1,25 @@
-﻿using System;
+﻿using CloudflareWorkerBundler.Models.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudflareWorkerBundler.Services.Router
+namespace CloudflareWorkerBundler.Services.Router.Routers
 {
     public class HonoRouter : IRouter
     {
+        private readonly ILogger _logger;
+
+        private readonly IBaseConfiguration _baseConfiguration;
+
+        public HonoRouter(IBaseConfiguration baseConfiguration, ILogger<HonoRouter> logger)
+        {
+            _logger = logger;
+            _baseConfiguration = baseConfiguration;
+        }
+        public string Name => "Hono";
 
         public const string HonoHeader =
             @"
@@ -16,10 +28,9 @@ const app = new Hono()";
 
         public const string HonoFooter = @"export default app";
 
-        public string EnvironmentVariableInsideRequest
-        {
-            get => "c.env.";
-        }
+        public string EnvironmentVariableInsideRequest => "c.env.";
+
+        public string RequestVariableInsideRequest => "c.req.";
 
 
         public void Begin(StringBuilder stringBuilder, bool fullWorker)

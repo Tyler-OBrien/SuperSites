@@ -7,6 +7,7 @@ using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Models.Configuration.Storage;
 using CloudflareWorkerBundler.Services.Router;
+using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Storage.Storages
 {
@@ -17,11 +18,17 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
 
         private readonly ICloudflareApiBroker _apiBroker;
 
+        private readonly ILogger _logger;
 
-        public KvStorage(KvStorageConfiguration kvStorageConfiguration, ICloudflareApiBroker apiBroker)
+        private readonly IBaseConfiguration _baseConfiguration;
+
+
+        public KvStorage(KvStorageConfiguration kvStorageConfiguration, ICloudflareApiBroker apiBroker, IBaseConfiguration baseConfiguration, ILogger<KvStorage> logger)
         {
             _configuration = kvStorageConfiguration;
             _apiBroker = apiBroker;
+            _logger = logger;
+            _baseConfiguration = baseConfiguration;
         }
 
 
@@ -32,11 +39,15 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
         public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName)
         {
             var newStorageResponse = new StorageResponse();
-            var response = await _apiBroker.WriteKvPair(fileHash, value, _configuration.AccountId, _configuration.NamespaceId,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
+            if (_baseConfiguration.DryRun == false)
             {
-                throw new InvalidOperationException($"Failed to upload {response}");
+                var response = await _apiBroker.WriteKvPair(fileHash, value, _configuration.AccountId,
+                    _configuration.NamespaceId,
+                    _configuration.ApiToken, CancellationToken.None);
+                if (response == null || response.Success == false)
+                {
+                    throw new InvalidOperationException($"Failed to upload {response}");
+                }
             }
 
             newStorageResponse.GenerateResponseCode = $"await {router.EnvironmentVariableInsideRequest}{_configuration.BindingName}.get(\"{fileHash}\", {{cacheTtl: 86400, type: \"stream\" }})"; 
@@ -45,12 +56,17 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
 
         public async Task<bool> Delete(string objectName)
         {
-            var response = await _apiBroker.DeleteKv(objectName, _configuration.AccountId, _configuration.NamespaceId,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
+            if (_baseConfiguration.DryRun == false)
             {
-                throw new InvalidOperationException($"Failed to delete {response}");
+                var response = await _apiBroker.DeleteKv(objectName, _configuration.AccountId,
+                    _configuration.NamespaceId,
+                    _configuration.ApiToken, CancellationToken.None);
+                if (response == null || response.Success == false)
+                {
+                    throw new InvalidOperationException($"Failed to delete {response}");
+                }
             }
+
             return true;
         }
 

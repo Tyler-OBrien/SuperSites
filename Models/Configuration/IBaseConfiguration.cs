@@ -13,6 +13,8 @@ namespace CloudflareWorkerBundler.Models.Configuration
         public string BundleDirectory { get; set; }
 
         public string OutputLocation { get; set; }
+
+        public string Router { get; set; }
         public bool Verbose { get; set; }
         public bool DryRun { get; set; }
 

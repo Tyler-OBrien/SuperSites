@@ -2,9 +2,12 @@
 using System.Text;
 using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Models.Configuration;
+using CloudflareWorkerBundler.Models.Middleware;
+using CloudflareWorkerBundler.Services.Middleware;
 using CloudflareWorkerBundler.Services.Router;
 using CloudflareWorkerBundler.Services.Storage;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Bundler;
 
@@ -12,13 +15,16 @@ public class FileBundler : IFileBundler
 {
 
     private readonly IBaseConfiguration _baseConfiguration;
-
+    private readonly ILogger _logger;
     private readonly IStorageCreatorService _storageCreatorService;
+    private readonly IRouterCreatorService _routerCreatorService;
 
-    public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService)
+    public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService, IRouterCreatorService routerCreatorService, ILogger<FileBundler> logger)
     {
         _baseConfiguration = baseConfiguration;
         _storageCreatorService = storageCreatorService;
+        _routerCreatorService = routerCreatorService;
+        _logger = logger;
     }
 
 
@@ -46,35 +52,41 @@ Preload();";
 
     public const string IndexHtml = "index.html";
 
-    public async Task<string> ProduceBundle(IRouter routerToUse, DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle)
+    public async Task<string> ProduceBundle(DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
-        sb.AppendLine($"// {filesToBundle.Count} Files found");
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
+        stringBuilder.AppendLine($"// {filesToBundle.Count} Files found");
         List<string> preloadCodes = new List<string>();
         string responseCode404 = null;
 
-        var storages = await _storageCreatorService.GetStorages();
-        sb.AppendLine($"// {storages.Count} Storages Configured.");
+        var routerToUse = await _routerCreatorService.GetRouter();
+        stringBuilder.AppendLine($"// Router using: {routerToUse.Name}");
 
+        var storages = await _storageCreatorService.GetStorages();
+        stringBuilder.AppendLine($"// {storages.Count} Storages Configured.");
+
+        List<IBaseMiddleware> middlewares = new List<IBaseMiddleware>() { new ETagMiddleware()};
+        stringBuilder.AppendLine($"// {middlewares.Count} Middlewares configured");
 
 
         // Write Header first
-        sb.AppendLine("// Router Header Below");
-        routerToUse.Begin(sb, true);
-        sb.AppendLine($"{Environment.NewLine}// Router Header End");
+        stringBuilder.AppendLine("// Router Header Below");
+        routerToUse.Begin(stringBuilder, true);
+        stringBuilder.AppendLine($"{Environment.NewLine}// Router Header End");
 
 
         foreach (var storage in storages.DistinctBy(storage => storage.Configuration.InstanceType))
         {
             if (String.IsNullOrWhiteSpace(storage.Header) == false)
             {
-                sb.AppendLine($"// {storage.Configuration.InstanceType} Storage Header Below");
-                sb.AppendLine(storage.Header.Trim());
-                sb.AppendLine($"{Environment.NewLine}// {storage.Configuration.InstanceType} Storage Header End");
+                stringBuilder.AppendLine($"// {storage.Configuration.InstanceType} Storage Header Below");
+                stringBuilder.AppendLine(storage.Header.Trim());
+                stringBuilder.AppendLine($"{Environment.NewLine}// {storage.Configuration.InstanceType} Storage Header End");
             }
         }
 
+        StringBuilder routerStringBuilder = new StringBuilder();
         foreach (var fileInfo in filesToBundle)
         {
             var relativePath = GetRelativePath(fileInfo, directoryToBundle);
@@ -82,6 +94,7 @@ Preload();";
             var getBytes = await File.ReadAllBytesAsync(fileInfo.FullName);
             var fileHash = BitConverter.ToString(SHA256.HashData(getBytes)).Replace("-", "")
                 .ToLowerInvariant();
+            var contentType = GetContentType(fileName);
             var trySelectStorage = storages.FirstOrDefault(storage => storage.StoreFile(fileInfo));
             if (trySelectStorage == null)
             {
@@ -100,21 +113,33 @@ Preload();";
 
             if (String.IsNullOrWhiteSpace(tryPutFile.GlobalCode) == false)
             {
-                sb.AppendLine(tryPutFile.GlobalCode);
+                stringBuilder.AppendLine(tryPutFile.GlobalCode);
             }
 
+
             var headers = tryPutFile.ResponseHeaders.Select(header =>
-                $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'");
+                $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'").ToList();
 
             var responseCode =
-                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{GetContentType(fileName)}' {String.Join("", headers)} }}}});";
+                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {String.Join("", headers)} }}}});";
+
+            StringBuilder responseMiddlewareStringBuilder = new StringBuilder();
+            // Middleware is WIP, still thinking about how exactly it should interact with responses
+            foreach (var baseMiddleware in middlewares.Where(middleware => middleware.Order == ExecutionOrder.Start))
+            {
+                baseMiddleware.AddCode(routerToUse, responseMiddlewareStringBuilder, fileName, contentType, fileHash, tryPutFile, headers);
+            }
+
+            responseMiddlewareStringBuilder.AppendLine(responseCode);
+
+            responseCode = responseMiddlewareStringBuilder.ToString();
 
 
-            routerToUse.AddRoute(sb, relativePath, fileHash, responseCode);
-            Console.WriteLine($"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
+            routerToUse.AddRoute(routerStringBuilder, relativePath, fileHash, responseCode);
+            _logger.LogInformation($"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
 
             if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                responseCode404 = $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{GetContentType(fileName)}' {String.Join("", headers)} }}}});";
+                responseCode404 = $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {String.Join("", headers)} }}}});";
 
             if (String.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
                 preloadCodes.Add(tryPutFile.PreloadCode);
@@ -122,20 +147,22 @@ Preload();";
         }
 
         if (responseCode404 != null)
-            routerToUse.Add404Route(sb, responseCode404);
+            routerToUse.Add404Route(routerStringBuilder, responseCode404);
 
-        routerToUse.End(sb, true);
+        routerToUse.End(routerStringBuilder, true);
+
+        stringBuilder.Append(routerStringBuilder);
         // Ok now let's warm up all of the blobs :)
-        sb.AppendLine("function Preload() {");
+        stringBuilder.AppendLine("function Preload() {");
         foreach (var preloadCode in preloadCodes)
-            sb.AppendLine(preloadCode);
+            stringBuilder.AppendLine(preloadCode);
 
-        sb.AppendLine("}");
+        stringBuilder.AppendLine("}");
 
-        sb.AppendLine(Footer.Trim());
+        stringBuilder.AppendLine(Footer.Trim());
 
-        Console.WriteLine($"Finished Bundled {filesToBundle.Count} of which are embedded in the Worker and will be warmed up on worker init!");
-        return sb.ToString();
+        _logger.LogCritical($"Finished Bundling {filesToBundle.Count} files.");
+        return stringBuilder.ToString();
     }
 
     public string GetContentType(string fileName)
