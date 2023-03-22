@@ -9,6 +9,8 @@ namespace CloudflareWorkerBundler.Broker
 {
     public partial class CloudflareApiBroker : ICloudflareApiBroker
     {
+        public const long CLOUDFLARE_API_SIZE_LIMIT = 104857600;
+
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
 

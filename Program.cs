@@ -12,6 +12,7 @@ using CloudflareWorkerBundler.Extensions;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Services.Storage;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace CloudflareWorkerBundler;
@@ -22,7 +23,7 @@ public static class Program
     private const string outputFormat =
         "[{Timestamp:h:mm:ss ff tt}] [{Level:u3}] [{SourceContext}] {Message:lj} {Exception:j}{NewLine}";
 
-
+    public static LoggingLevelSwitch _logLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
 
 
 
@@ -53,13 +54,17 @@ public static class Program
         var services = new ServiceCollection();
 
 
-        Log.Logger = new LoggerConfiguration().MinimumLevel.Information()
-            .WriteTo.Console(outputTemplate: outputFormat, restrictedToMinimumLevel: LogEventLevel.Information).Enrich.FromLogContext().CreateLogger();
+        Log.Logger = new LoggerConfiguration().MinimumLevel
+            .ControlledBy(_logLevelSwitch)
+            .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Fatal)
+            .WriteTo.Console(outputTemplate: outputFormat).Enrich.FromLogContext().CreateLogger();
         Log.Logger.Information("Loaded SeriLog Logger");
 
 
         // Load Config
         var baseConfig = await BaseConfiguration.Init();
+        if (baseConfig.Verbose)
+            _logLevelSwitch.MinimumLevel = LogEventLevel.Verbose;
         services.AddSingleton<IBaseConfiguration>(baseConfig);
 
         services.AddCliCommands();

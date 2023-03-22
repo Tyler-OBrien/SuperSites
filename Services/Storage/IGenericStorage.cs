@@ -36,5 +36,11 @@ namespace CloudflareWorkerBundler.Services.Storage
         }
         // Return a list of all files
         public Task<List<string>> List();
+
+        // Called at the end of the bundler, required for some Storages like KV which do things in bulk behind the scenes
+        public async Task FinalizeChanges()
+        {
+            
+        }
     }
 }

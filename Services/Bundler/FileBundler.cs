@@ -146,6 +146,10 @@ Preload();";
 
         }
 
+        foreach (var storage in storages)
+            await storage.FinalizeChanges();
+        
+
         if (responseCode404 != null)
             routerToUse.Add404Route(routerStringBuilder, responseCode404);
 

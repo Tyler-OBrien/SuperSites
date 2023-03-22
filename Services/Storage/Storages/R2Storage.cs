@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,6 +47,7 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
                 {
                     throw new InvalidOperationException($"Failed to upload {response}");
                 }
+                _logger.LogInformation($"Uploaded {fileName} to R2");
             }
 
             newStorageResponse.GenerateResponseCode = $"(await {router.EnvironmentVariableInsideRequest}{_configuration.BindingName}.get(\"{fileHash}\")).body";
@@ -64,7 +66,7 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages
                     throw new InvalidOperationException($"Failed to delete {response}");
                 }
             }
-
+            _logger.LogInformation($"Deleted {objectName} from R2");
             return true;
         }
 
