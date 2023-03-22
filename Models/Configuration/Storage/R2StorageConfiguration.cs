@@ -1,34 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
-namespace CloudflareWorkerBundler.Models.Configuration.Storage
+namespace CloudflareWorkerBundler.Models.Configuration.Storage;
+
+public class R2StorageConfiguration : IStorageConfiguration
 {
-    public class R2StorageConfiguration : IStorageConfiguration
-    {
-        [JsonPropertyName("Type")] public string InstanceType => Type;
-        public static string Type => "R2";
+    [ConfigurationEnvironmentVariableProperty("CloudflareAPIToken")]
 
-        public List<string> AllowedFileExtensions { get; set; }
-        public long FileSizeLimit { get; set; }
+    public string ApiToken { get; set; }
 
-        [ConfigurationEnvironmentVariableProperty("CloudflareAPIToken")]
+    [ConfigurationEnvironmentVariableProperty("AccountID")]
 
-        public string ApiToken { get; set; }
+    public string AccountId { get; set; }
 
-        [ConfigurationEnvironmentVariableProperty("AccountID")]
+    [ConfigurationEnvironmentVariableProperty("BucketName")]
+    public string BucketName { get; set; }
 
-        public string AccountId { get; set; }
+    public string BindingName { get; set; }
 
-        [ConfigurationEnvironmentVariableProperty("BucketName")]
-        public string BucketName { get; set; }
+    public bool UseCacheApi { get; set; }
+    [JsonPropertyName("Type")] public string InstanceType => Type;
+    public static string Type => "R2";
 
-        public string BindingName { get; set; }
-
-        public bool UseCacheApi { get; set; }
-
-    }
+    public List<string> AllowedFileExtensions { get; set; }
+    public long FileSizeLimit { get; set; }
 }

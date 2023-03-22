@@ -1,16 +1,15 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using CloudflareWorkerBundler.Broker;
-using CloudflareWorkerBundler.Services.Bundler;
-using CloudflareWorkerBundler.Services.Router;
-using Microsoft.Extensions.DependencyInjection;
-using Polly.Extensions.Http;
-using Polly;
 using CloudflareWorkerBundler.Extensions;
 using CloudflareWorkerBundler.Models.Configuration;
+using CloudflareWorkerBundler.Services.Bundler;
+using CloudflareWorkerBundler.Services.Router;
 using CloudflareWorkerBundler.Services.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -19,12 +18,10 @@ namespace CloudflareWorkerBundler;
 
 public static class Program
 {
-
     private const string outputFormat =
         "[{Timestamp:h:mm:ss ff tt}] [{Level:u3}] [{SourceContext}] {Message:lj} {Exception:j}{NewLine}";
 
-    public static LoggingLevelSwitch _logLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
-
+    public static LoggingLevelSwitch _logLevelSwitch = new();
 
 
     /// <summary>
@@ -81,12 +78,10 @@ public static class Program
         return services.BuildServiceProvider();
     }
 
-    static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
     {
         return HttpPolicyExtensions
             .HandleTransientHttpError()
             .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromMilliseconds(Math.Max(50, retryAttempt * 50)));
     }
-
-
 }

@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CloudflareWorkerBundler.Models.CloudflareAPI;
+﻿using CloudflareWorkerBundler.Models.CloudflareAPI;
 
-namespace CloudflareWorkerBundler.Broker
+namespace CloudflareWorkerBundler.Broker;
+
+public partial interface ICloudflareApiBroker
 {
-    public partial interface ICloudflareApiBroker
-    {
-
-        Task<ApiResponseBase> WriteKvPairs(Dictionary<string, byte[]> records, string accountId, string nameSpaceId, string apiToken, CancellationToken token);
+    Task<ApiResponseBase> WriteKvPairs(Dictionary<string, byte[]> records, string accountId, string nameSpaceId,
+        string apiToken, CancellationToken token);
 
 
-        Task<ApiResponse<KvResult[], KvResultInfo>> ListKv(string cursor, string accountId, string nameSpaceId,
-            string apiToken,
-            CancellationToken token);
+    Task<ApiResponse<KvResult[], KvResultInfo>> ListKv(string cursor, string accountId, string nameSpaceId,
+        string apiToken,
+        CancellationToken token);
 
 
-        Task<ApiResponseBase> DeleteKv(List<string> keys, string accountId, string nameSpaceId, string apiToken,
-            CancellationToken token);
-
-
-    }
+    Task<ApiResponseBase> DeleteKv(List<string> keys, string accountId, string nameSpaceId, string apiToken,
+        CancellationToken token);
 }

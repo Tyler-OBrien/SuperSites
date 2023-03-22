@@ -1,6 +1,5 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Models.Middleware;
 using CloudflareWorkerBundler.Services.Middleware;
@@ -13,21 +12,6 @@ namespace CloudflareWorkerBundler.Services.Bundler;
 
 public class FileBundler : IFileBundler
 {
-
-    private readonly IBaseConfiguration _baseConfiguration;
-    private readonly ILogger _logger;
-    private readonly IStorageCreatorService _storageCreatorService;
-    private readonly IRouterCreatorService _routerCreatorService;
-
-    public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService, IRouterCreatorService routerCreatorService, ILogger<FileBundler> logger)
-    {
-        _baseConfiguration = baseConfiguration;
-        _storageCreatorService = storageCreatorService;
-        _routerCreatorService = routerCreatorService;
-        _logger = logger;
-    }
-
-
     public const string FileVariablePrefix = "file";
 
 
@@ -52,12 +36,26 @@ Preload();";
 
     public const string IndexHtml = "index.html";
 
+    private readonly IBaseConfiguration _baseConfiguration;
+    private readonly ILogger _logger;
+    private readonly IRouterCreatorService _routerCreatorService;
+    private readonly IStorageCreatorService _storageCreatorService;
+
+    public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService,
+        IRouterCreatorService routerCreatorService, ILogger<FileBundler> logger)
+    {
+        _baseConfiguration = baseConfiguration;
+        _storageCreatorService = storageCreatorService;
+        _routerCreatorService = routerCreatorService;
+        _logger = logger;
+    }
+
     public async Task<string> ProduceBundle(DirectoryInfo directoryToBundle, List<FileInfo> filesToBundle)
     {
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
         stringBuilder.AppendLine($"// {filesToBundle.Count} Files found");
-        List<string> preloadCodes = new List<string>();
+        var preloadCodes = new List<string>();
         string responseCode404 = null;
 
         var routerToUse = await _routerCreatorService.GetRouter();
@@ -66,7 +64,7 @@ Preload();";
         var storages = await _storageCreatorService.GetStorages();
         stringBuilder.AppendLine($"// {storages.Count} Storages Configured.");
 
-        List<IBaseMiddleware> middlewares = new List<IBaseMiddleware>() { new ETagMiddleware()};
+        var middlewares = new List<IBaseMiddleware> { new ETagMiddleware() };
         stringBuilder.AppendLine($"// {middlewares.Count} Middlewares configured");
 
 
@@ -78,15 +76,16 @@ Preload();";
 
         foreach (var storage in storages.DistinctBy(storage => storage.Configuration.InstanceType))
         {
-            if (String.IsNullOrWhiteSpace(storage.Header) == false)
+            if (string.IsNullOrWhiteSpace(storage.Header) == false)
             {
                 stringBuilder.AppendLine($"// {storage.Configuration.InstanceType} Storage Header Below");
                 stringBuilder.AppendLine(storage.Header.Trim());
-                stringBuilder.AppendLine($"{Environment.NewLine}// {storage.Configuration.InstanceType} Storage Header End");
+                stringBuilder.AppendLine(
+                    $"{Environment.NewLine}// {storage.Configuration.InstanceType} Storage Header End");
             }
         }
 
-        StringBuilder routerStringBuilder = new StringBuilder();
+        var routerStringBuilder = new StringBuilder();
         foreach (var fileInfo in filesToBundle)
         {
             var relativePath = GetRelativePath(fileInfo, directoryToBundle);
@@ -99,19 +98,19 @@ Preload();";
             if (trySelectStorage == null)
             {
                 // Throw an exception
-                throw new InvalidOperationException($"Failed to find storage for file {fileInfo.Name}, length: {fileInfo.Length}, extension: {fileInfo.Extension}");
+                throw new InvalidOperationException(
+                    $"Failed to find storage for file {fileInfo.Name}, length: {fileInfo.Length}, extension: {fileInfo.Extension}");
             }
 
             var tryPutFile = await trySelectStorage.Write(routerToUse, fileHash, getBytes, fileName);
 
-            
 
             if (tryPutFile.ResponseHeaders.ContainsKey("ETag") == false)
             {
                 tryPutFile.ResponseHeaders.Add("ETag", $"{fileHash}");
             }
 
-            if (String.IsNullOrWhiteSpace(tryPutFile.GlobalCode) == false)
+            if (string.IsNullOrWhiteSpace(tryPutFile.GlobalCode) == false)
             {
                 stringBuilder.AppendLine(tryPutFile.GlobalCode);
             }
@@ -121,13 +120,14 @@ Preload();";
                 $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'").ToList();
 
             var responseCode =
-                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {String.Join("", headers)} }}}});";
+                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
 
-            StringBuilder responseMiddlewareStringBuilder = new StringBuilder();
+            var responseMiddlewareStringBuilder = new StringBuilder();
             // Middleware is WIP, still thinking about how exactly it should interact with responses
             foreach (var baseMiddleware in middlewares.Where(middleware => middleware.Order == ExecutionOrder.Start))
             {
-                baseMiddleware.AddCode(routerToUse, responseMiddlewareStringBuilder, fileName, contentType, fileHash, tryPutFile, headers);
+                baseMiddleware.AddCode(routerToUse, responseMiddlewareStringBuilder, fileName, contentType, fileHash,
+                    tryPutFile, headers);
             }
 
             responseMiddlewareStringBuilder.AppendLine(responseCode);
@@ -136,19 +136,20 @@ Preload();";
 
 
             routerToUse.AddRoute(routerStringBuilder, relativePath, fileHash, responseCode);
-            _logger.LogInformation($"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
+            _logger.LogInformation(
+                $"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
 
             if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                responseCode404 = $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {String.Join("", headers)} }}}});";
+                responseCode404 =
+                    $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
 
-            if (String.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
+            if (string.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
                 preloadCodes.Add(tryPutFile.PreloadCode);
-
         }
 
         foreach (var storage in storages)
             await storage.FinalizeChanges();
-        
+
 
         if (responseCode404 != null)
             routerToUse.Add404Route(routerStringBuilder, responseCode404);

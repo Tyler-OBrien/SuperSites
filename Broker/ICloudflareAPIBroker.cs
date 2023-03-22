@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CloudflareWorkerBundler.Broker;
 
-namespace CloudflareWorkerBundler.Broker
+public partial interface ICloudflareApiBroker
 {
-    public partial interface ICloudflareApiBroker
-    {
-    }
 }
