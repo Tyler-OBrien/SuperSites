@@ -5,6 +5,7 @@ using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Extensions;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Services.Bundler;
+using CloudflareWorkerBundler.Services.Manifest;
 using CloudflareWorkerBundler.Services.Router;
 using CloudflareWorkerBundler.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +75,7 @@ public static class Program
         services.AddScoped<IFileBundler, FileBundler>();
         services.AddScoped<IStorageCreatorService, StorageCreatorService>();
         services.AddScoped<IRouterCreatorService, RouterCreatorService>();
+        services.AddScoped<IManifestService, ManifestService>();
         services.AddLogging(builder => builder.AddSerilog());
         return services.BuildServiceProvider();
     }

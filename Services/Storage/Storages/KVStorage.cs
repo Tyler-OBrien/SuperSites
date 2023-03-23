@@ -35,14 +35,16 @@ public class KvStorage : IGenericStorage
         _writeCache = new Dictionary<string, byte[]>();
     }
 
+    public string? BindingCode => $"{{ binding = \"{_configuration.BindingName}\", id = \"{_configuration.NamespaceId}\", preview_id = \"{_configuration.NamespaceId}\" }}";
+    public string? BindingInternalName => "kv_namespaces";
 
     public IStorageConfiguration Configuration => _configuration;
 
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
-        if (_baseConfiguration.DryRun == false)
+        if (_baseConfiguration.DryRun == false && inManifest == false)
         {
             if (_writeCacheLength + value.Length > CloudflareApiBroker.CLOUDFLARE_API_SIZE_LIMIT ||
                 _writeCache.Count + 1 > WORKERS_KV_BULK_MAX) // lol how unlikely is that second condition
@@ -68,6 +70,27 @@ public class KvStorage : IGenericStorage
         return true;
     }
 
+    public async Task<string?> GetFile(string key)
+    {
+        return await _apiBroker.GetKv(key, _configuration.AccountId, _configuration.NamespaceId,
+            _configuration.ApiToken, CancellationToken.None);
+    }
+
+    public async Task PlainWrite(string objectName, byte[] value)
+    {
+        var writePairs = new Dictionary<string, byte[]>
+        {
+            { objectName, value }
+        };
+        var response = await _apiBroker.WriteKvPairs(writePairs, _configuration.AccountId,
+            _configuration.NamespaceId,
+            _configuration.ApiToken, CancellationToken.None);
+        if (response == null || response.Success == false)
+        {
+            throw new InvalidOperationException($"Failed to upload {response}");
+        }
+    }
+    // Untested, was never used.
     public async Task<List<string>> List()
     {
         var results = new List<string>();

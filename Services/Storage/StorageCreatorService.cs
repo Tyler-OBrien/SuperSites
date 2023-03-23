@@ -23,28 +23,38 @@ public class StorageCreatorService : IStorageCreatorService
         _loggerFactory = loggerFactory;
     }
 
-    public async Task<List<IGenericStorage>> GetStorages()
+    public List<IGenericStorage> GetStorages()
     {
         var storages = new List<IGenericStorage>();
         foreach (var storageConfiguration in _baseConfiguration.StorageConfigurations)
         {
-            if (storageConfiguration is EmbeddedStorageConfiguration embeddedStorageConfiguration)
-            {
-                storages.Add(new EmbeddedStorage(embeddedStorageConfiguration, _baseConfiguration,
-                    _loggerFactory.CreateLogger<EmbeddedStorage>()));
-            }
-            else if (storageConfiguration is KvStorageConfiguration kvStorageConfiguration)
-            {
-                storages.Add(new KvStorage(kvStorageConfiguration, _apiBroker, _baseConfiguration,
-                    _loggerFactory.CreateLogger<KvStorage>()));
-            }
-            else if (storageConfiguration is R2StorageConfiguration r2StorageConfiguration)
-            {
-                storages.Add(new R2Storage(r2StorageConfiguration, _apiBroker, _baseConfiguration,
-                    _loggerFactory.CreateLogger<R2Storage>()));
-            }
+            storages.Add(CreateSingle(storageConfiguration));
         }
 
         return storages;
+    }
+
+    public IGenericStorage CreateSingle(IStorageConfiguration storageConfiguration)
+    {
+        if (storageConfiguration is EmbeddedStorageConfiguration embeddedStorageConfiguration)
+        {
+            return new EmbeddedStorage(embeddedStorageConfiguration, _baseConfiguration,
+                _loggerFactory.CreateLogger<EmbeddedStorage>());
+        }
+
+        if (storageConfiguration is KvStorageConfiguration kvStorageConfiguration)
+        {
+            return new KvStorage(kvStorageConfiguration, _apiBroker, _baseConfiguration,
+                _loggerFactory.CreateLogger<KvStorage>());
+        }
+
+        if (storageConfiguration is R2StorageConfiguration r2StorageConfiguration)
+        {
+            return new R2Storage(r2StorageConfiguration, _apiBroker, _baseConfiguration,
+                _loggerFactory.CreateLogger<R2Storage>());
+        }
+
+        throw new InvalidOperationException(
+            $"Tried to create storage configuration of unknown type: {storageConfiguration.InstanceType}");
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using CloudflareWorkerBundler.Extensions;
 using CloudflareWorkerBundler.Models.CloudflareAPI;
 
@@ -22,6 +23,7 @@ public partial class CloudflareApiBroker
             _logger);
     }
 
+    // Untested as this was never used
     public async Task<ApiResponse<KvResult[], KvResultInfo>> ListKv(string cursor, string accountId, string nameSpaceId,
         string apiToken,
         CancellationToken token)
@@ -45,6 +47,23 @@ public partial class CloudflareApiBroker
         var response = await _httpClient.SendAsync(request, token);
         return await response.ProcessHttpResponseAsync($"Delete {key.Count} keys in KV Namespace {nameSpaceId}",
             _logger);
+    }
+
+    public async Task<string?> GetKv(string key, string accountId, string nameSpaceId, string apiToken,
+        CancellationToken token)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            KvGetRequestUri(accountId, nameSpaceId) + "/values/" + Uri.EscapeDataString(key));
+        request.Headers.Add("Authorization", $"Bearer {apiToken}");
+        var response = await _httpClient.SendAsync(request, token);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+        if (response.IsSuccessStatusCode)
+            return await response.Content.ReadAsStringAsync();
+        // I've gotta think about how to do this better... but for now we can just use this to parse the bad result
+        await response.ProcessHttpResponseAsync($"Get {key} keys in KV Namespace {nameSpaceId}",
+            _logger);
+        return null;
     }
 
     public string KvGetRequestUri(string accountId, string nameSpace)

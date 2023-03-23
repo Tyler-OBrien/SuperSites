@@ -69,6 +69,5 @@ public class BundleCommand : Command
         var outputFile = await _fileBundler.ProduceBundle(directory, getFileInfo);
 
         await File.WriteAllTextAsync(outputFileName, outputFile);
-        Console.ReadKey(true);
     }
 }

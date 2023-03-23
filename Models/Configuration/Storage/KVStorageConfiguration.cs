@@ -17,11 +17,11 @@ public class KvStorageConfiguration : IStorageConfiguration
     public string BindingName { get; set; }
 
 
-    public bool UseCacheApi { get; set; }
-
     [JsonInclude]
     [JsonPropertyName("Type")]
     public string InstanceType => Type;
+
+    [JsonIgnore] public string StorageID => NamespaceId;
 
     public static string Type => "KV";
     public List<string> AllowedFileExtensions { get; set; }

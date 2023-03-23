@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Storage.Storages;
 
-internal class R2Storage : IGenericStorage
+public class R2Storage : IGenericStorage
 {
     private readonly ICloudflareApiBroker _apiBroker;
 
@@ -28,11 +28,13 @@ internal class R2Storage : IGenericStorage
 
     public IStorageConfiguration Configuration => _configuration;
 
+    public string? BindingCode => $"{{ binding = \"{_configuration.BindingName}\", bucket_name = \"{_configuration.BucketName}\", preview_bucket_name = \"{_configuration.BucketName}\" }}";
+    public string? BindingInternalName => "r2_buckets";
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
-        if (_baseConfiguration.DryRun == false)
+        if (_baseConfiguration.DryRun == false && inManifest == false)
         {
             var response = await _apiBroker.WriteR2(fileHash, value, _configuration.AccountId,
                 _configuration.BucketName,
@@ -67,6 +69,25 @@ internal class R2Storage : IGenericStorage
         return true;
     }
 
+    public async Task<string?> GetFile(string objectName)
+    {
+        return await _apiBroker.GetR2(objectName, _configuration.AccountId, _configuration.BucketName,
+            _configuration.ApiToken, CancellationToken.None);
+    }
+
+    public async Task PlainWrite(string objectName, byte[] value)
+    {
+        var response = await _apiBroker.WriteR2(objectName, value, _configuration.AccountId,
+            _configuration.BucketName,
+            _configuration.ApiToken, CancellationToken.None);
+        if (response == null || response.Success == false)
+        {
+            throw new InvalidOperationException($"Failed to upload {response}");
+        }
+        _logger.LogInformation($"Uploaded {objectName} to R2");
+    }
+
+    // Untested, was never used.
     public async Task<List<string>> List()
     {
         var results = new List<string>();

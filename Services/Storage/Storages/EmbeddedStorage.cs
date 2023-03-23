@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Storage.Storages;
 
-internal class EmbeddedStorage : IGenericStorage
+public class EmbeddedStorage : IGenericStorage
 {
     public const string FILE_VARIABLE_PREFIX = "file";
 
@@ -42,10 +42,13 @@ function b64toBlob(base64) {
 ";
 
 
+    public string? BindingCode => null;
+    public string? BindingInternalName => null;
+
     public IStorageConfiguration Configuration => _configuration;
 
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
         if (hashesUsed.Contains(fileHash) == false)
@@ -68,8 +71,18 @@ function b64toBlob(base64) {
     }
 
 
+    public async Task<string> GetFile(string objectName)
+    {
+        throw new NotImplementedException("You can't get a file from an embedded storage.");
+    }
+
+    public async Task PlainWrite(string objectName, byte[] value)
+    {
+        throw new NotImplementedException("You can't do plain writes to embedded storage.");
+    }
+
     public async Task<List<string>> List()
     {
-        return new List<string>();
+        return hashesUsed.ToList();
     }
 }

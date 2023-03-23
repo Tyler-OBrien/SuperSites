@@ -17,7 +17,7 @@ public class BaseConfiguration : IBaseConfiguration
     [ConfigurationEnvironmentVariableProperty("OUTPUT_LOCATION")]
     public string OutputLocation { get; set; }
 
-    [ConfigurationEnvironmentVariableProperty("Router")]
+    [ConfigurationEnvironmentVariableProperty("ROUTER")]
     public string Router { get; set; }
 
 
@@ -29,10 +29,10 @@ public class BaseConfiguration : IBaseConfiguration
 
     public List<IStorageConfiguration> StorageConfigurations { get; set; }
 
-    public bool Validate()
-    {
-        return true;
-    }
+    // Any more then this get pruned, and their assets removed. 
+    public int MaxManifestCount { get; set; }
+
+    public IStorageConfiguration ManifestStorageConfiguration { get; set; }
 
     public static async Task<BaseConfiguration> Init()
     {
@@ -52,6 +52,7 @@ public class BaseConfiguration : IBaseConfiguration
                 BundleDirectory = "",
                 OutputLocation = "",
                 Verbose = false,
+                Router = "Vanilla",
                 StorageConfigurations = new List<IStorageConfiguration>
                 {
                     new EmbeddedStorageConfiguration
@@ -64,10 +65,23 @@ public class BaseConfiguration : IBaseConfiguration
                     },
                     new KvStorageConfiguration
                     {
-                        FileSizeLimit = 10000000
+                        FileSizeLimit = 10000000,
+                        NamespaceId = "NamespaceId",
+                        BindingName = "KV"
                     },
                     new R2StorageConfiguration()
-                }
+                    {
+                        BucketName = "Bucket_Name",
+                        BindingName = "R2"
+                    }
+                },
+                ManifestStorageConfiguration = new R2StorageConfiguration()
+                {
+                    BucketName = "WebsiteName-Manifests",
+                    BindingName = "MANIFEST"
+                },
+                MaxManifestCount = 3,
+
             };
             await File.WriteAllTextAsync(ConfigName,
                 JsonSerializer.Serialize(defaultConfig, seralizationConfiguration));

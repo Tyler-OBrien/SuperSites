@@ -15,4 +15,7 @@ public partial interface ICloudflareApiBroker
 
     Task<ApiResponseBase> DeleteKv(List<string> keys, string accountId, string nameSpaceId, string apiToken,
         CancellationToken token);
+
+    Task<string?> GetKv(string key, string accountId, string nameSpaceId, string apiToken,
+        CancellationToken token);
 }

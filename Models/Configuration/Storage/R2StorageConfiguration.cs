@@ -17,7 +17,9 @@ public class R2StorageConfiguration : IStorageConfiguration
 
     public string BindingName { get; set; }
 
-    public bool UseCacheApi { get; set; }
+    [JsonIgnore] public string StorageID => $"{AccountId}+{BucketName}";
+
+
     [JsonPropertyName("Type")] public string InstanceType => Type;
     public static string Type => "R2";
 

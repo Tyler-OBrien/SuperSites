@@ -1,7 +1,10 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text;
 using CloudflareWorkerBundler.Models.Configuration;
+using CloudflareWorkerBundler.Models.Manifest;
 using CloudflareWorkerBundler.Models.Middleware;
+using CloudflareWorkerBundler.Services.Manifest;
 using CloudflareWorkerBundler.Services.Middleware;
 using CloudflareWorkerBundler.Services.Router;
 using CloudflareWorkerBundler.Services.Storage;
@@ -40,13 +43,15 @@ Preload();";
     private readonly ILogger _logger;
     private readonly IRouterCreatorService _routerCreatorService;
     private readonly IStorageCreatorService _storageCreatorService;
+    private readonly IManifestService _manifestService;
 
     public FileBundler(IBaseConfiguration baseConfiguration, IStorageCreatorService storageCreatorService,
-        IRouterCreatorService routerCreatorService, ILogger<FileBundler> logger)
+        IRouterCreatorService routerCreatorService, IManifestService manifestService, ILogger<FileBundler> logger)
     {
         _baseConfiguration = baseConfiguration;
         _storageCreatorService = storageCreatorService;
         _routerCreatorService = routerCreatorService;
+        _manifestService = manifestService;
         _logger = logger;
     }
 
@@ -58,10 +63,19 @@ Preload();";
         var preloadCodes = new List<string>();
         string responseCode404 = null;
 
+        var usingManifest = await _manifestService.LoadManifest();
+        stringBuilder.AppendLine($"// We are {(usingManifest ? "" : "not")} using a manifest.");
+        Deployment newDeployment = null;
+        if (usingManifest)
+        {
+            newDeployment = _manifestService.Manifest.CreateNewDeployment();
+            stringBuilder.AppendLine($"// This is deployment {newDeployment.ID} at {newDeployment.DeploymentTimeUTC} UTC");
+        }
+
         var routerToUse = await _routerCreatorService.GetRouter();
         stringBuilder.AppendLine($"// Router using: {routerToUse.Name}");
 
-        var storages = await _storageCreatorService.GetStorages();
+        var storages = _storageCreatorService.GetStorages();
         stringBuilder.AppendLine($"// {storages.Count} Storages Configured.");
 
         var middlewares = new List<IBaseMiddleware> { new ETagMiddleware() };
@@ -102,8 +116,15 @@ Preload();";
                     $"Failed to find storage for file {fileInfo.Name}, length: {fileInfo.Length}, extension: {fileInfo.Extension}");
             }
 
-            var tryPutFile = await trySelectStorage.Write(routerToUse, fileHash, getBytes, fileName);
+            bool inManifest = usingManifest && _manifestService.IsFileUploaded(trySelectStorage, fileHash);
 
+
+            var tryPutFile = await trySelectStorage.Write(routerToUse, fileHash, getBytes, fileName, inManifest);
+
+            if (usingManifest)
+            {
+                newDeployment?.AddFile(fileHash, relativePath, trySelectStorage);
+            }
 
             if (tryPutFile.ResponseHeaders.ContainsKey("ETag") == false)
             {
@@ -166,7 +187,35 @@ Preload();";
 
         stringBuilder.AppendLine(Footer.Trim());
 
-        _logger.LogCritical($"Finished Bundling {filesToBundle.Count} files.");
+        _logger.LogInformation($"Finished Bundling {filesToBundle.Count} files.");
+        if (usingManifest)
+        {
+            _logger.LogInformation("Uploading Manifest...");
+            await _manifestService.SaveManifest();
+            _logger.LogInformation($"Uploaded new Manifest, manifest now contains {_manifestService.Manifest.Deployments.Count} Deployments");
+            // Clean up time!
+            await _manifestService.CleanUpFiles(storages);
+        }
+        var storageInfoStringBuilder = new StringBuilder();
+
+        var findStoragesToBind = storages
+            .DistinctBy(storage => storage.Configuration.InstanceType + storage.Configuration.StorageID)
+            .Where(storage => storage.BindingCode != null).ToList();
+        if (findStoragesToBind.Any())
+        {
+            var groupByType = findStoragesToBind.GroupBy(storage => storage.BindingInternalName).ToList();
+            storageInfoStringBuilder.AppendLine(
+                $"--- Please Create the following bindings in your wrangler.toml if you haven't already:");
+            foreach (var type in groupByType)
+            {
+                storageInfoStringBuilder.AppendLine($"{type.Key} = [");
+                storageInfoStringBuilder.AppendLine(String.Join($",{Environment.NewLine}", type.Select(storage => storage.BindingCode)));
+                storageInfoStringBuilder.AppendLine($"]");
+            }
+            _logger.LogInformation(storageInfoStringBuilder.ToString());
+        }
+        
+
         return stringBuilder.ToString();
     }
 
