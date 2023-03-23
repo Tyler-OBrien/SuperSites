@@ -39,7 +39,7 @@ public class BundleCommand : Command
 
     public async Task ExecuteCommand(DirectoryInfo directory)
     {
-        var outputFileName = "worker.js";
+        var outputFileName = _baseConfiguration.OutputLocation;
         IRouter router = null;
         if (directory == null)
         {
