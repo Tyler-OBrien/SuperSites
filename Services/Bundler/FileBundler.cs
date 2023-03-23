@@ -128,7 +128,7 @@ Preload();";
 
             if (tryPutFile.ResponseHeaders.ContainsKey("ETag") == false)
             {
-                tryPutFile.ResponseHeaders.Add("ETag", $"{fileHash}");
+                tryPutFile.ResponseHeaders.Add("ETag", $"\"{fileHash}\"");
             }
 
             if (string.IsNullOrWhiteSpace(tryPutFile.GlobalCode) == false)
