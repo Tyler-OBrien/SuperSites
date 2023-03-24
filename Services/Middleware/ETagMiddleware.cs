@@ -15,7 +15,7 @@ public class ETagMiddleware : IBaseMiddleware
     {
         // We do .endsWith for now because of Cloudflare's default behavior with converting everything to a weak etag. Not sure the best approach for this, but I think this works ok for now...
         stringBuilder.Append(
-            $"\nif ({router.RequestVariableInsideRequest}headers.get(\"If-None-Match\")?.endsWith(`\"{fileHash}\"`)) {{   ");
+            $"\nif ({router.RequestVariableInsideRequest}headers.get(\"If-None-Match\") === `W/\"{fileHash}\"`) {{   ");
         stringBuilder.Append(
             $"return new Response(null, {{ status: 304, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});");
         stringBuilder.Append("}\r\n");
