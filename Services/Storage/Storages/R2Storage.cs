@@ -59,7 +59,7 @@ public class R2Storage : IGenericStorage
             var response = await _apiBroker.DeleteR2(objectName, _configuration.AccountId,
                 _configuration.BucketName,
                 _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
+            if (response == null || (response.Success == false && response.Errors.All(error => error.Code == 10007))) // Either success or does not exist. 
             {
                 throw new InvalidOperationException($"Failed to delete {response}");
             }
