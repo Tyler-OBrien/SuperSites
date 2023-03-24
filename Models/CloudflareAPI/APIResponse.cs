@@ -9,18 +9,18 @@ public class ApiResponseNoPagination<T> : ApiResponse<T, object>
 
     [JsonPropertyName("success")] public bool Success { get; set; }
 
-    [JsonPropertyName("errors")] public string[] Errors { get; set; }
+    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
 
-    [JsonPropertyName("messages")] public string[] Messages { get; set; }
+    [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
 }
 
 public interface ApiResponseBase
 {
     [JsonPropertyName("success")] public bool Success { get; set; }
 
-    [JsonPropertyName("errors")] public string[] Errors { get; set; }
+    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
 
-    [JsonPropertyName("messages")] public string[] Messages { get; set; }
+    [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
 }
 
 public class ApiResponse<TResult, TResultInfo> : ApiResponseBase
@@ -36,16 +36,28 @@ public class ApiResponse<TResult, TResultInfo> : ApiResponseBase
 
     [JsonPropertyName("success")] public bool Success { get; set; }
 
-    [JsonPropertyName("errors")] public string[] Errors { get; set; }
+    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
 
-    [JsonPropertyName("messages")] public string[] Messages { get; set; }
+    [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
 }
+
+public partial class APIMessage
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("code")]
+    public long? Code { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("message")]
+    public string Message { get; set; }
+}
+
 
 public class ApiResponse
 {
     [JsonPropertyName("success")] public bool Success { get; set; }
 
-    [JsonPropertyName("errors")] public string[] Errors { get; set; }
+    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
 
-    [JsonPropertyName("messages")] public string[] Messages { get; set; }
+    [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
 }
