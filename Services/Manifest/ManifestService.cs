@@ -64,8 +64,9 @@ namespace CloudflareWorkerBundler.Services.Manifest
         public bool IsFileUploaded(IGenericStorage storage, string fileHash)
         {
             if (Manifest == null) throw new InvalidOperationException("The Manifest is not loaded yet...");
+            // If the file is already uploaded by a deployment for that same storage type and Id...
             return Manifest.Deployments.Any(deployment =>
-                deployment.Files.Any(file => file.FileHash.Equals(fileHash, StringComparison.Ordinal)));
+                deployment.Files.Any(file => file.FileHash.Equals(fileHash, StringComparison.Ordinal) && file.StorageType == storage.Configuration.InstanceType && file.StorageId == storage.Configuration.StorageID));
         }
 
         public async Task CleanUpFiles(List<IGenericStorage> storages)
