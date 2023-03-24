@@ -72,8 +72,8 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
         {
             _logger.LogInformation($"{node.Segment}");
             builder.AppendLine($"if (path[{depth}] === \"{node.Segment}\") {{");
-            builder.Append(node.Route.ResponseCode);
-            builder.Append("}");
+            builder.AppendLine(node.Route.ResponseCode);
+            builder.AppendLine("}");
             first = false;
         }
 
@@ -87,10 +87,10 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
             TraverseAndAdd(builder, child, depth + 1);
             if (child.Route != null)
             {
-                builder.Append(indentStr + child.Route.ResponseCode);
+                builder.AppendLine(indentStr + child.Route.ResponseCode);
             }
 
-            builder.Append("}");
+            builder.AppendLine("}");
             first = false;
         }
     }
