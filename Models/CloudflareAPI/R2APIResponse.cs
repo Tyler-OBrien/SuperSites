@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.CloudflareAPI;
-
+/*
 public class R2ApiResponse : ApiResponse<R2Result, R2ResultInfo>
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -24,7 +24,7 @@ public class R2ApiResponse : ApiResponse<R2Result, R2ResultInfo>
     [JsonPropertyName("result_info")]
     public R2ResultInfo ResultInfo { get; set; }
 }
-
+*/
 public class R2Result
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

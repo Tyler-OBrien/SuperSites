@@ -5,9 +5,11 @@ using System.Net;
 namespace CloudflareWorkerBundler.Broker;
 
 // This is all undocumented superrr scary API, ripped from Wrangler
+// THIS IS THE OLD IMPLEMENTATION, NOW USING minio
+
 public partial class CloudflareApiBroker
 {
-    public async Task<ApiResponseBase> WriteR2(string objectName, byte[] value, string accountId, string bucketName,
+    public async Task<ApiResponseBase?> WriteR2(string objectName, byte[] value, string accountId, string bucketName,
         string apiToken,
         CancellationToken token)
     {
@@ -21,7 +23,7 @@ public partial class CloudflareApiBroker
     }
 
     // Untested as this was never used
-    public async Task<ApiResponse<KvResult[], KvResultInfo>> ListR2(string cursor, string accountId, string bucketName,
+    public async Task<ApiResponse<KvResult[], KvResultInfo>?> ListR2(string cursor, string accountId, string bucketName,
         string apiToken,
         CancellationToken token)
     {
@@ -35,7 +37,7 @@ public partial class CloudflareApiBroker
     }
 
 
-    public async Task<ApiResponseBase> DeleteR2(string objectName, string accountId, string bucketName, string apiToken,
+    public async Task<ApiResponseBase?> DeleteR2(string objectName, string accountId, string bucketName, string apiToken,
         CancellationToken token)
     {
         var request = new HttpRequestMessage(HttpMethod.Delete,
@@ -46,7 +48,7 @@ public partial class CloudflareApiBroker
     }
 
 
-    public async Task<string> GetR2(string objectName, string accountId, string bucketName, string apiToken,
+    public async Task<string?> GetR2(string objectName, string accountId, string bucketName, string apiToken,
         CancellationToken token)
     {
         var request = new HttpRequestMessage(HttpMethod.Get,

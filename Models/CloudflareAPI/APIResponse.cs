@@ -2,17 +2,6 @@
 
 namespace CloudflareWorkerBundler.Models.CloudflareAPI;
 
-public class ApiResponseNoPagination<T> : ApiResponse<T, object>
-{
-    [JsonPropertyName("result")] public T Result { get; set; }
-
-
-    [JsonPropertyName("success")] public bool Success { get; set; }
-
-    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
-
-    [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
-}
 
 public interface ApiResponseBase
 {
@@ -27,16 +16,16 @@ public class ApiResponse<TResult, TResultInfo> : ApiResponseBase
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("result")]
-    public TResult Result { get; set; }
+    public TResult? Result { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("result_info")]
-    public TResultInfo ResultInfo { get; set; }
+    public TResultInfo? ResultInfo { get; set; }
 
 
     [JsonPropertyName("success")] public bool Success { get; set; }
 
-    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; }
+    [JsonPropertyName("errors")] public APIMessage[] Errors { get; set; } 
 
     [JsonPropertyName("messages")] public APIMessage[] Messages { get; set; }
 }

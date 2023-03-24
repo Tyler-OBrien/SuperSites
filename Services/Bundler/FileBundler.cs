@@ -104,9 +104,10 @@ Preload();";
         {
             var relativePath = GetRelativePath(fileInfo, directoryToBundle);
             var fileName = fileInfo.Name;
-            var getBytes = await File.ReadAllBytesAsync(fileInfo.FullName);
+            var getBytes = File.OpenRead(fileInfo.FullName);
             var fileHash = BitConverter.ToString(SHA256.HashData(getBytes)).Replace("-", "")
                 .ToLowerInvariant();
+            getBytes.Position = 0;
             var contentType = GetContentType(fileName);
             var trySelectStorage = storages.FirstOrDefault(storage => storage.StoreFile(fileInfo));
             if (trySelectStorage == null)

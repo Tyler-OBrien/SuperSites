@@ -7,7 +7,7 @@ namespace CloudflareWorkerBundler.Broker;
 
 public partial class CloudflareApiBroker
 {
-    public async Task<ApiResponseBase> WriteKvPairs(Dictionary<string, byte[]> records, string accountId,
+    public async Task<ApiResponseBase?> WriteKvPairs(Dictionary<string, byte[]> records, string accountId,
         string nameSpaceId, string apiToken, CancellationToken token)
     {
         var items = records.Select(recordKvp => new WriteKvBulkItem
@@ -24,7 +24,7 @@ public partial class CloudflareApiBroker
     }
 
     // Untested as this was never used
-    public async Task<ApiResponse<KvResult[], KvResultInfo>> ListKv(string cursor, string accountId, string nameSpaceId,
+    public async Task<ApiResponse<KvResult[], KvResultInfo>?> ListKv(string cursor, string accountId, string nameSpaceId,
         string apiToken,
         CancellationToken token)
     {
@@ -36,7 +36,7 @@ public partial class CloudflareApiBroker
         return await response.ProcessHttpResponseAsyncList<KvResult, KvResultInfo>("Get KV Keys List", _logger);
     }
 
-    public async Task<ApiResponseBase> DeleteKv(List<string> key, string accountId, string nameSpaceId, string apiToken,
+    public async Task<ApiResponseBase?> DeleteKv(List<string> key, string accountId, string nameSpaceId, string apiToken,
         CancellationToken token)
     {
         var newContent = JsonContent.Create(key);

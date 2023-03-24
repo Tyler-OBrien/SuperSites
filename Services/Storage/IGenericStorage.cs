@@ -21,7 +21,7 @@ public interface IGenericStorage
     public IStorageConfiguration Configuration { get; }
 
     // Write File to storage and return response
-    public Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest);
+    public Task<StorageResponse> Write(IRouter router, string fileHash, FileStream value, string fileName, bool inManifest);
 
     // Delete a file, used in cleanup
     public Task<bool> Delete(string objectName);
@@ -55,8 +55,6 @@ public interface IGenericStorage
     /// <returns></returns>
     public Task PlainWrite(string objectName, byte[] value);
 
-    // Return a list of all files
-    public Task<List<string>> List();
 
     // Called at the end of the bundler, required for some Storages like KV which do things in bulk behind the scenes
     public async Task FinalizeChanges()

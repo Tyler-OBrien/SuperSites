@@ -1,6 +1,7 @@
 ﻿using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Models.Configuration.Storage;
+using CloudflareWorkerBundler.Services.Minio;
 using CloudflareWorkerBundler.Services.Router;
 using Microsoft.Extensions.Logging;
 
@@ -8,7 +9,7 @@ namespace CloudflareWorkerBundler.Services.Storage.Storages;
 
 public class R2Storage : IGenericStorage
 {
-    private readonly ICloudflareApiBroker _apiBroker;
+    private readonly IMinioService _minioService;
 
     private readonly IBaseConfiguration _baseConfiguration;
 
@@ -16,11 +17,11 @@ public class R2Storage : IGenericStorage
 
     private readonly ILogger _logger;
 
-    public R2Storage(R2StorageConfiguration storageConfiguration, ICloudflareApiBroker apiBroker,
+    public R2Storage(R2StorageConfiguration storageConfiguration, IMinioService minioService,
         IBaseConfiguration baseConfiguration, ILogger<R2Storage> logger)
     {
         _configuration = storageConfiguration;
-        _apiBroker = apiBroker;
+        _minioService = minioService;
         _logger = logger;
         _baseConfiguration = baseConfiguration;
     }
@@ -31,18 +32,13 @@ public class R2Storage : IGenericStorage
     public string? BindingCode => $"{{ binding = \"{_configuration.BindingName}\", bucket_name = \"{_configuration.BucketName}\", preview_bucket_name = \"{_configuration.BucketName}\" }}";
     public string? BindingInternalName => "r2_buckets";
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, FileStream value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
         if (_baseConfiguration.DryRun == false && inManifest == false)
         {
-            var response = await _apiBroker.WriteR2(fileHash, value, _configuration.AccountId,
-                _configuration.BucketName,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || response.Success == false)
-            {
-                throw new InvalidOperationException($"Failed to upload {response}");
-            }
+            await _minioService.UploadFile(fileHash, value, _configuration.AccountId,
+                _configuration.AccessKey, _configuration.SecretKey, _configuration.BucketName, CancellationToken.None);
 
             _logger.LogInformation($"Uploaded {fileName} to R2");
         }
@@ -56,13 +52,9 @@ public class R2Storage : IGenericStorage
     {
         if (_baseConfiguration.DryRun == false)
         {
-            var response = await _apiBroker.DeleteR2(objectName, _configuration.AccountId,
-                _configuration.BucketName,
-                _configuration.ApiToken, CancellationToken.None);
-            if (response == null || (response.Success == false && response.Errors.All(error => error.Code == 10007))) // Either success or does not exist. 
-            {
-                throw new InvalidOperationException($"Failed to delete {response}");
-            }
+            var response = await _minioService.DeleteFile(objectName, _configuration.AccountId,
+                _configuration.AccessKey, _configuration.SecretKey, _configuration.BucketName, CancellationToken.None);
+           
         }
 
         _logger.LogInformation($"Deleted {objectName} from R2");
@@ -71,36 +63,15 @@ public class R2Storage : IGenericStorage
 
     public async Task<string?> GetFile(string objectName)
     {
-        return await _apiBroker.GetR2(objectName, _configuration.AccountId, _configuration.BucketName,
-            _configuration.ApiToken, CancellationToken.None);
+        return await _minioService.GetFile(objectName, _configuration.AccountId,
+            _configuration.AccessKey, _configuration.SecretKey, _configuration.BucketName, CancellationToken.None);
     }
 
     public async Task PlainWrite(string objectName, byte[] value)
     {
-        var response = await _apiBroker.WriteR2(objectName, value, _configuration.AccountId,
-            _configuration.BucketName,
-            _configuration.ApiToken, CancellationToken.None);
-        if (response == null || response.Success == false)
-        {
-            throw new InvalidOperationException($"Failed to upload {response}");
-        }
+        await _minioService.UploadFile(objectName, new MemoryStream(value), _configuration.AccountId,
+            _configuration.AccessKey, _configuration.SecretKey, _configuration.BucketName, CancellationToken.None);
+
         _logger.LogInformation($"Uploaded {objectName} to R2");
-    }
-
-    // Untested, was never used.
-    public async Task<List<string>> List()
-    {
-        var results = new List<string>();
-        var cursor = "";
-        while (true)
-        {
-            var tryList = await _apiBroker.ListR2(cursor, _configuration.AccountId, _configuration.BucketName,
-                _configuration.ApiToken, CancellationToken.None);
-            cursor = tryList.ResultInfo.Cursor;
-            results.AddRange(tryList.Result.Select(result => result.Name));
-            if (tryList.ResultInfo.Count < results.Count) break;
-        }
-
-        return results;
     }
 }

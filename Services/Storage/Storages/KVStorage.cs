@@ -41,7 +41,7 @@ public class KvStorage : IGenericStorage
     public IStorageConfiguration Configuration => _configuration;
 
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, FileStream value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
         if (_baseConfiguration.DryRun == false && inManifest == false)
@@ -49,7 +49,11 @@ public class KvStorage : IGenericStorage
             if (_writeCacheLength + value.Length > CloudflareApiBroker.CLOUDFLARE_API_SIZE_LIMIT ||
                 _writeCache.Count + 1 > WORKERS_KV_BULK_MAX) // lol how unlikely is that second condition
                 await FlushWrites();
-            _writeCache.Add(fileHash, value);
+
+            // The files here shouldn't be any larger then a 25 MB at most, otherwise they wouldn't even fit into the Embedded storage...
+            var memoryStream = new MemoryStream();
+            await value.CopyToAsync(memoryStream);
+            _writeCache.Add(fileHash, memoryStream.ToArray());
             _writeCacheLength += value.Length;
         }
 
@@ -90,23 +94,6 @@ public class KvStorage : IGenericStorage
             throw new InvalidOperationException($"Failed to upload {response}");
         }
     }
-    // Untested, was never used.
-    public async Task<List<string>> List()
-    {
-        var results = new List<string>();
-        var cursor = "";
-        while (true)
-        {
-            var tryList = await _apiBroker.ListKv(cursor, _configuration.AccountId, _configuration.NamespaceId,
-                _configuration.ApiToken, CancellationToken.None);
-            cursor = tryList.ResultInfo.Cursor;
-            results.AddRange(tryList.Result.Select(result => result.Name));
-            if (tryList.ResultInfo.Count < results.Count) break;
-        }
-
-        return results;
-    }
-
 
     public async Task FinalizeChanges()
     {

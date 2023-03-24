@@ -1,26 +1,26 @@
 ﻿using CloudflareWorkerBundler.Broker;
 using CloudflareWorkerBundler.Models.Configuration;
 using CloudflareWorkerBundler.Models.Configuration.Storage;
+using CloudflareWorkerBundler.Services.Minio;
 using CloudflareWorkerBundler.Services.Storage.Storages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace CloudflareWorkerBundler.Services.Storage;
 
 public class StorageCreatorService : IStorageCreatorService
 {
-    private readonly ICloudflareApiBroker _apiBroker;
 
     private readonly IBaseConfiguration _baseConfiguration;
 
-    private readonly ILoggerFactory _loggerFactory;
+
+    private readonly IServiceProvider _serviceProvider;
 
 
-    public StorageCreatorService(IBaseConfiguration baseConfiguration, ICloudflareApiBroker apiBroker,
-        ILoggerFactory loggerFactory)
+    public StorageCreatorService(IBaseConfiguration baseConfiguration, IServiceProvider serviceProvider)
     {
         _baseConfiguration = baseConfiguration;
-        _apiBroker = apiBroker;
-        _loggerFactory = loggerFactory;
+        _serviceProvider = serviceProvider;
     }
 
     public List<IGenericStorage> GetStorages()
@@ -38,20 +38,16 @@ public class StorageCreatorService : IStorageCreatorService
     {
         if (storageConfiguration is EmbeddedStorageConfiguration embeddedStorageConfiguration)
         {
-            return new EmbeddedStorage(embeddedStorageConfiguration, _baseConfiguration,
-                _loggerFactory.CreateLogger<EmbeddedStorage>());
+            return ActivatorUtilities.CreateInstance<EmbeddedStorage>(_serviceProvider, embeddedStorageConfiguration);
         }
-
-        if (storageConfiguration is KvStorageConfiguration kvStorageConfiguration)
+        else if (storageConfiguration is KvStorageConfiguration kvStorageConfiguration)
         {
-            return new KvStorage(kvStorageConfiguration, _apiBroker, _baseConfiguration,
-                _loggerFactory.CreateLogger<KvStorage>());
+            return ActivatorUtilities.CreateInstance<KvStorage>(_serviceProvider, kvStorageConfiguration);
+
         }
-
-        if (storageConfiguration is R2StorageConfiguration r2StorageConfiguration)
+        else if (storageConfiguration is R2StorageConfiguration r2StorageConfiguration)
         {
-            return new R2Storage(r2StorageConfiguration, _apiBroker, _baseConfiguration,
-                _loggerFactory.CreateLogger<R2Storage>());
+            return ActivatorUtilities.CreateInstance<R2Storage>(_serviceProvider, r2StorageConfiguration);
         }
 
         throw new InvalidOperationException(

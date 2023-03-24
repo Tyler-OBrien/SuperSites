@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.CloudflareAPI;
-
+/*
 public class KvapiResponse : ApiResponse<KvResult, KvResultInfo>
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -22,7 +22,7 @@ public class KvapiResponse : ApiResponse<KvResult, KvResultInfo>
     [JsonPropertyName("result_info")]
     public KvResultInfo ResultInfo { get; set; }
 }
-
+*/
 public class KvResult
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

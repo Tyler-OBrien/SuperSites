@@ -48,13 +48,17 @@ function b64toBlob(base64) {
     public IStorageConfiguration Configuration => _configuration;
 
 
-    public async Task<StorageResponse> Write(IRouter router, string fileHash, byte[] value, string fileName, bool inManifest)
+    public async Task<StorageResponse> Write(IRouter router, string fileHash, FileStream value, string fileName, bool inManifest)
     {
         var newStorageResponse = new StorageResponse();
         if (hashesUsed.Contains(fileHash) == false)
         {
+            // The files here shouldn't be any larger then a 5 MB at most, otherwise they wouldn't even fit into the Embedded storage...
+            var memoryStream = new MemoryStream();
+            await value.CopyToAsync(memoryStream);
+
             newStorageResponse.GlobalCode =
-                $"let {FILE_VARIABLE_PREFIX}{fileHash} = \"{Convert.ToBase64String(value)}\"";
+                $"let {FILE_VARIABLE_PREFIX}{fileHash} = \"{Convert.ToBase64String(memoryStream.ToArray())}\"";
 
             newStorageResponse.PreloadCode =
                 $"    globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob = b64toBlob({FILE_VARIABLE_PREFIX}{fileHash});";
@@ -71,7 +75,7 @@ function b64toBlob(base64) {
     }
 
 
-    public async Task<string> GetFile(string objectName)
+    public async Task<string?> GetFile(string objectName)
     {
         throw new NotImplementedException("You can't get a file from an embedded storage.");
     }
@@ -79,10 +83,5 @@ function b64toBlob(base64) {
     public async Task PlainWrite(string objectName, byte[] value)
     {
         throw new NotImplementedException("You can't do plain writes to embedded storage.");
-    }
-
-    public async Task<List<string>> List()
-    {
-        return hashesUsed.ToList();
     }
 }
