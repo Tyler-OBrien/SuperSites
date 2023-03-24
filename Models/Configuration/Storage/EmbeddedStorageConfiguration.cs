@@ -1,7 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.Configuration.Storage;
 
+[RequiresUnreferencedCode("")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class EmbeddedStorageConfiguration : IStorageConfiguration
 {
     [JsonPropertyName("Type")] public string InstanceType => Type;

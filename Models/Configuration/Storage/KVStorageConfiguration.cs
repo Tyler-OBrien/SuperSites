@@ -1,17 +1,18 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.Configuration.Storage;
 
+[RequiresUnreferencedCode("")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class KvStorageConfiguration : IStorageConfiguration
 {
-    [ConfigurationEnvironmentVariableProperty("CloudflareAPIToken")]
+    [ConfigurationEnvironmentVariableProperty("CLOUDFLARE_API_TOKEN")]
     public string ApiToken { get; set; }
 
-    [ConfigurationEnvironmentVariableProperty("AccountID")]
+    [ConfigurationEnvironmentVariableProperty("ACCOUNTID")]
     public string AccountId { get; set; }
 
-
-    [ConfigurationEnvironmentVariableProperty("NamespaceId")]
     public string NamespaceId { get; set; }
 
     public string BindingName { get; set; }
@@ -19,10 +20,10 @@ public class KvStorageConfiguration : IStorageConfiguration
 
     [JsonInclude]
     [JsonPropertyName("Type")]
+
     public string InstanceType => Type;
 
     [JsonIgnore] public string StorageID => NamespaceId;
-
     public static string Type => "KV";
     public List<string> AllowedFileExtensions { get; set; }
     public long FileSizeLimit { get; set; }

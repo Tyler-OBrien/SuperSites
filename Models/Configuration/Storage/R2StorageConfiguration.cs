@@ -1,18 +1,24 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.Configuration.Storage;
 
+[RequiresUnreferencedCode("")]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public class R2StorageConfiguration : IStorageConfiguration
 {
-    [ConfigurationEnvironmentVariableProperty("CloudflareAPIToken")]
+    [ConfigurationEnvironmentVariableProperty("ACCESSKEY")]
 
-    public string ApiToken { get; set; }
+    public string AccessKey { get; set; }
 
-    [ConfigurationEnvironmentVariableProperty("AccountID")]
+    [ConfigurationEnvironmentVariableProperty("SECRETKEY")]
+
+    public string SecretKey { get; set; }
+
+    [ConfigurationEnvironmentVariableProperty("ACCOUNTID")]
 
     public string AccountId { get; set; }
 
-    [ConfigurationEnvironmentVariableProperty("BucketName")]
     public string BucketName { get; set; }
 
     public string BindingName { get; set; }
