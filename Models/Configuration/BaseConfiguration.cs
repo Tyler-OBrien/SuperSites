@@ -90,6 +90,15 @@ public class BaseConfiguration : IBaseConfiguration
         var tryLoadConfig = await File.ReadAllTextAsync(ConfigName);
         var baseConfig = JsonSerializer.Deserialize<BaseConfiguration>(tryLoadConfig, seralizationConfiguration);
         baseConfig.ResolveConfigurationDatafromEnvironmentVariables();
+        foreach (var storage in baseConfig.StorageConfigurations)
+        {
+            storage.ResolveConfigurationDatafromEnvironmentVariables();
+        }
+
+        if (baseConfig.ManifestStorageConfiguration != null)
+        {
+            baseConfig.ManifestStorageConfiguration.ResolveConfigurationDatafromEnvironmentVariables();
+        }
         return baseConfig;
     }
 }
