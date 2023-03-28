@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using CloudflareWorkerBundler.Extensions;
 
 namespace CloudflareWorkerBundler.Models.Configuration.Storage;
 
@@ -34,8 +35,12 @@ public class KvStorageConfiguration : IStorageConfiguration
     public long FileSizeLimit { get; set; }
 
 
-    public bool Validate()
+    public void Validate()
     {
-        return true;
+        ApiToken.ThrowIfNullOrEmpty("{Name} cannot be empty in KVStorageConfiguration", nameof(ApiToken));
+        AccountId.ThrowIfNullOrEmpty("{Name} cannot be empty in KVStorageConfiguration", nameof(AccountId));
+        NamespaceId.ThrowIfNullOrEmpty("{Name} cannot be empty in KVStorageConfiguration", nameof(NamespaceId));
+        BindingName.ThrowIfNullOrEmpty("{Name} cannot be empty in KVStorageConfiguration", nameof(BindingName));
     }
+    
 }

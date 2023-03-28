@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using CloudflareWorkerBundler.Extensions;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace CloudflareWorkerBundler.Models.Configuration.Storage;
@@ -25,6 +26,7 @@ public class R2StorageConfiguration : IStorageConfiguration
 
     public int? CacheSeconds { get; set; }
 
+
     [JsonIgnore] public string StorageID => $"{AccountId}+{BucketName}";
 
 
@@ -36,4 +38,13 @@ public class R2StorageConfiguration : IStorageConfiguration
     public List<string> IncludePaths { get; set; }
     public List<string> ExcludePaths { get; set; }
     public long FileSizeLimit { get; set; }
+
+    public void Validate()
+    {
+        AccessKey.ThrowIfNullOrEmpty("{Name} cannot be empty in R2StorageConfiguration", nameof(AccessKey));
+        SecretKey.ThrowIfNullOrEmpty("{Name} cannot be empty in R2StorageConfiguration", nameof(SecretKey));
+        BucketName.ThrowIfNullOrEmpty("{Name} cannot be empty in R2StorageConfiguration", nameof(BucketName));
+        AccountId.ThrowIfNullOrEmpty("{Name} cannot be empty in R2StorageConfiguration", nameof(AccountId));
+        BindingName.ThrowIfNullOrEmpty("{Name} cannot be empty in R2StorageConfiguration", nameof(BindingName));
+    }
 }

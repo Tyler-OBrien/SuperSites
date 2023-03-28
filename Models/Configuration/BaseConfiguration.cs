@@ -66,7 +66,7 @@ public class BaseConfiguration : IBaseConfiguration
                         {
                             "html", "css", "js"
                         },
-                        FileSizeLimit = 200000
+                        FileSizeLimit = 200000,
                     },
                     new KvStorageConfiguration
                     {
@@ -84,6 +84,7 @@ public class BaseConfiguration : IBaseConfiguration
                 ManifestStorageConfiguration = new R2StorageConfiguration()
                 {
                     BucketName = "websitename-default-manifests",
+                    BindingName = "I know it's silly, but this still needs one, even if it's not being used."
                 },
                 MaxManifestCount = 3,
 
@@ -99,11 +100,13 @@ public class BaseConfiguration : IBaseConfiguration
         foreach (var storage in baseConfig.StorageConfigurations)
         {
             storage.ResolveConfigurationDatafromEnvironmentVariables();
+            storage.Validate();
         }
 
         if (baseConfig.ManifestStorageConfiguration != null)
         {
             baseConfig.ManifestStorageConfiguration.ResolveConfigurationDatafromEnvironmentVariables();
+            baseConfig.ManifestStorageConfiguration.Validate();
         }
         return baseConfig;
     }

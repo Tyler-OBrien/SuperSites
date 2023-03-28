@@ -26,8 +26,7 @@ public class EmbeddedStorageConfiguration : IStorageConfiguration
         }
     }
 
-    public bool Validate()
+    public void Validate()
     {
-        return true;
     }
 }

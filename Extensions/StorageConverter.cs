@@ -75,18 +75,19 @@ public class TypeDiscriminatorConverter : JsonConverter<IStorageConfiguration>
         {
             if (!jsonDocument.RootElement.TryGetProperty("Type", out var typeProperty))
             {
-                throw new JsonException($"Missing type element on node at {reader.Position}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}");
+                  
+                throw new JsonException($"HUMAN EXPLANATION: You're probably missing Type on one of your storage configuration blocks Computer Explanation: Missing type element on node at {reader.Position.GetInteger()}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}. We got stuck on {jsonDocument.RootElement.ToString()}.");
             }
 
             Type type;
             var tryGetString = typeProperty.GetString();
 
             if (tryGetString == null)
-                throw new JsonException($"Couldn't read type property  at {reader.Position}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}");
+                throw new JsonException($"HUMAN EXPLANATION: You're probably missing Type on one of your storage configuration blocks, or messed up the formatting of it.. Computer Explanation: Couldn't read type property at {reader.Position.GetInteger()}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}. We got stuck on {jsonDocument.RootElement.ToString()}.");
 
             if (_types.TryGetValue(tryGetString, out type) == false)
             {
-                throw new JsonException($"Couldn't read type property  at {reader.Position}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}");
+                throw new JsonException($"HUMAN EXPLANATION: You're probably missing Type on one of your storage configuration blocks, or messed up the formatting of it.. Computer Explanation: Couldn't read type property at {reader.Position.GetInteger()}, {reader.TokenType} / {reader.TokenStartIndex} / {reader.TokenType}. We got stuck on {jsonDocument.RootElement.ToString()}.");
             }
 
             var jsonObject = jsonDocument.RootElement.GetRawText();
