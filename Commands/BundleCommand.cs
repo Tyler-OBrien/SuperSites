@@ -5,11 +5,6 @@ using CloudflareWorkerBundler.Services.Router;
 
 namespace CloudflareWorkerBundler.Commands;
 
-//Todo:
-// Use Singleton service for options/settings
-// Make Command work with more then 9 parameters
-// Add better statistics on KV/R2 Items
-// Clean up old files after build
 public class BundleCommand : Command
 {
     private readonly IBaseConfiguration _baseConfiguration;
