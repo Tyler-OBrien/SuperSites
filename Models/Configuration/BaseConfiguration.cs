@@ -32,6 +32,9 @@ public class BaseConfiguration : IBaseConfiguration
     // Any more then this get pruned, and their assets removed. 
     public int MaxManifestCount { get; set; }
 
+    public bool ETags { get; set; }
+
+
     public IStorageConfiguration ManifestStorageConfiguration { get; set; }
 
     public static async Task<BaseConfiguration> Init()
@@ -71,14 +74,14 @@ public class BaseConfiguration : IBaseConfiguration
                     },
                     new R2StorageConfiguration()
                     {
-                        BucketName = "Bucket_Name",
-                        BindingName = "R2"
+                        BucketName = "bucket_name",
+                        BindingName = "R2",
+                        CacheSeconds = 3600,
                     }
                 },
                 ManifestStorageConfiguration = new R2StorageConfiguration()
                 {
-                    BucketName = "WebsiteName-Manifests",
-                    BindingName = "MANIFEST"
+                    BucketName = "websitename-default-manifests",
                 },
                 MaxManifestCount = 3,
 

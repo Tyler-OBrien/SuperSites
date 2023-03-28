@@ -61,7 +61,7 @@ Preload();";
         stringBuilder.AppendLine($"// Bundled by Cloudflare Worker Bundler on {DateTime.UtcNow.ToString()} UTC.");
         stringBuilder.AppendLine($"// {filesToBundle.Count} Files found");
         var preloadCodes = new List<string>();
-        string responseCode404 = null;
+        Action add404Route = null;
 
         var usingManifest = await _manifestService.LoadManifest();
         stringBuilder.AppendLine($"// We are {(usingManifest ? "" : "not")} using a manifest.");
@@ -81,10 +81,12 @@ Preload();";
         var middlewares = new List<IBaseMiddleware> { new ETagMiddleware() };
         stringBuilder.AppendLine($"// {middlewares.Count} Middlewares configured");
 
+        bool useCache = storages.Any(storage =>
+            storage.Configuration.CacheSeconds != null && storage.Configuration.CacheSeconds > 0);
 
         // Write Header first
         stringBuilder.AppendLine("// Router Header Below");
-        routerToUse.Begin(stringBuilder, true);
+        routerToUse.Begin(stringBuilder, true, useCache);
         stringBuilder.AppendLine($"{Environment.NewLine}// Router Header End");
 
 
@@ -142,7 +144,7 @@ Preload();";
                 $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'").ToList();
 
             var responseCode =
-                $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
+                $"let response = new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
 
             var responseMiddlewareStringBuilder = new StringBuilder();
             // Middleware is WIP, still thinking about how exactly it should interact with responses
@@ -157,13 +159,14 @@ Preload();";
             responseCode = responseMiddlewareStringBuilder.ToString();
 
 
-            routerToUse.AddRoute(routerStringBuilder, relativePath, fileHash, responseCode);
+            routerToUse.AddRoute(routerStringBuilder, relativePath, fileHash, responseCode, trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
             _logger.LogInformation(
                 $"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
 
             if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
-                responseCode404 =
-                    $"return new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
+                routerToUse.Add404Route(routerStringBuilder, fileHash,
+                    $"let response = new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});",
+                    trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
 
             if (string.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
                 preloadCodes.Add(tryPutFile.PreloadCode);
@@ -173,10 +176,7 @@ Preload();";
             await storage.FinalizeChanges();
 
 
-        if (responseCode404 != null)
-            routerToUse.Add404Route(routerStringBuilder, responseCode404);
-
-        routerToUse.End(routerStringBuilder, true);
+        routerToUse.End(routerStringBuilder, true, useCache);
 
         stringBuilder.Append(routerStringBuilder);
         // Ok now let's warm up all of the blobs :)

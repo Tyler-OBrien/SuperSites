@@ -32,5 +32,8 @@ namespace CloudflareWorkerBundler.Models.Configuration.Storage
 
         public List<string> ExcludePaths { get; set; }
         public long FileSizeLimit { get; set; }
+
+        public int? CacheSeconds { get; set; }
+
     }
 }

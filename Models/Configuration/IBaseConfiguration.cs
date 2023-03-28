@@ -19,4 +19,6 @@ public interface IBaseConfiguration
 
     // Any more then this get pruned, and their assets removed. 
     public int MaxManifestCount { get; set; }
+
+    public bool ETags { get; set; }
 }

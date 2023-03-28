@@ -17,6 +17,8 @@ public class KvStorageConfiguration : IStorageConfiguration
 
     public string BindingName { get; set; }
 
+    public int? CacheSeconds { get; set; }
+
 
     [JsonInclude]
     [JsonPropertyName("Type")]

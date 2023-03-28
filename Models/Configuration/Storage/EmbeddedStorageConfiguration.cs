@@ -17,6 +17,15 @@ public class EmbeddedStorageConfiguration : IStorageConfiguration
     public List<string> ExcludePaths { get; set; }
     public long FileSizeLimit { get; set; }
 
+    public int? CacheSeconds
+    {
+        get => null;
+        set
+        {
+
+        }
+    }
+
     public bool Validate()
     {
         return true;

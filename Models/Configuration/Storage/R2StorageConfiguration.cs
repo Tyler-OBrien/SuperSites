@@ -23,6 +23,8 @@ public class R2StorageConfiguration : IStorageConfiguration
 
     public string BindingName { get; set; }
 
+    public int? CacheSeconds { get; set; }
+
     [JsonIgnore] public string StorageID => $"{AccountId}+{BucketName}";
 
 

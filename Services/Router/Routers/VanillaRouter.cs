@@ -8,7 +8,7 @@ public class VanillaRouter : IRouter
 {
     public const string VanillaHeader =
         @"export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
    const requestedUrl = new URL(request.url);
 let path = requestedUrl.pathname.split(""/"").slice(1);
 
@@ -37,22 +37,53 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
 
     public string RequestVariableInsideRequest => "request.";
 
+    public string ContextVariableInsideRequest => "ctx.";
 
-    public void Begin(StringBuilder stringBuilder, bool fullWorker)
+
+
+    public void Begin(StringBuilder stringBuilder, bool fullWorker, bool useCache)
     {
     }
 
-    public void AddRoute(StringBuilder stringBuilder, string relativePath, string fileHash, string responseCode)
+    public void AddRoute(StringBuilder stringBuilder, string relativePath, string fileHash, string responseCode, int? cacheSeconds, string deploymentId)
     {
-        Routes.Add(new VanillaRouterRoute { Path = relativePath, FileHash = fileHash, ResponseCode = responseCode });
+        if (cacheSeconds is > 0)
+        {
+   
+            Routes.Add(new VanillaRouterRoute { Path = relativePath, FileHash = fileHash, ResponseCode = GenerateCacheResponse(fileHash, responseCode) });
+
+        }
+        else
+        {
+            Routes.Add(new VanillaRouterRoute { Path = relativePath, FileHash = fileHash, ResponseCode = responseCode + "return response;" });
+        }
     }
 
-    public void Add404Route(StringBuilder stringBuilder, string responseCode)
+    private string GenerateCacheResponse(string fileHash, string responseCode)
     {
-        Route404 = new VanillaRouterRoute { ResponseCode = responseCode };
+        var url = $"https://yourworker.local/{fileHash}";
+
+        return
+            $"let tryGetCache = await caches.default.match('{url}'); if (tryGetCache) {{ return tryGetCache; }}" +
+            $"{responseCode}" +
+            $"{ContextVariableInsideRequest}waitUntil(caches.default.put('{url}', response.clone()));" +
+            $"return response;";
     }
 
-    public void End(StringBuilder stringBuilder, bool fullWorker)
+    public void Add404Route(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds, string deploymentId)
+    {
+        if (cacheSeconds is > 0)
+        {
+            Route404 = new VanillaRouterRoute { ResponseCode = GenerateCacheResponse(fileHash, responseCode) };
+
+        }
+        else
+        {
+            Route404 = new VanillaRouterRoute { ResponseCode = responseCode + "return response;" };
+        }
+    }
+
+    public void End(StringBuilder stringBuilder, bool fullWorker, bool useCache)
     {
         _logger.LogInformation("-- Vanilla Router --");
         var tree = new VanillaRouterTree(Routes);
