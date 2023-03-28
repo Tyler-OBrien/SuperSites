@@ -53,9 +53,9 @@ public static class Program
         var services = new ServiceCollection();
 
 
-        Log.Logger = new LoggerConfiguration().MinimumLevel
-            .ControlledBy(_logLevelSwitch)
+        Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Fatal)
+            .MinimumLevel.ControlledBy(_logLevelSwitch)
             .WriteTo.Console(outputTemplate: outputFormat).Enrich.FromLogContext().CreateLogger();
         Log.Logger.Information("Loaded SeriLog Logger");
 
