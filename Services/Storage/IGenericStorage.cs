@@ -27,16 +27,21 @@ public interface IGenericStorage
     public Task<bool> Delete(string objectName);
 
     /// <summary>
-    ///     Used to decide when to store a file. By default, uses Configured File Size Limit and AllowedFileExtensions. Can be
+    ///     Used to decide when to store a file. By default, uses Configured File Size Limit and Allowed/DisallowedFileExtensions, and Include/Exclude Paths. Can be
     ///     overiden.
     /// </summary>
-    /// <param name="file"></param>
     /// <returns></returns>
-    public virtual bool StoreFile(FileInfo file)
+    public virtual bool StoreFile(FileInfo file, string relativePath)
     {
         if (Configuration.FileSizeLimit != 0 && file.Length > Configuration.FileSizeLimit) return false;
         if (Configuration.AllowedFileExtensions != null && Configuration.AllowedFileExtensions.Any(extension =>
                 file.Extension.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) == false) return false;
+        if (Configuration.DisallowFileExtensions != null && Configuration.DisallowFileExtensions.Any(extension =>
+                file.Extension.EndsWith(extension, StringComparison.OrdinalIgnoreCase))) return false;
+        if (Configuration.IncludePaths != null && Configuration.IncludePaths.Any(extension =>
+                relativePath.StartsWith(extension, StringComparison.OrdinalIgnoreCase)) == false) return false;
+        if (Configuration.ExcludePaths != null && Configuration.ExcludePaths.Any(extension =>
+                relativePath.StartsWith(extension, StringComparison.OrdinalIgnoreCase))) return false;
         return true;
     }
 

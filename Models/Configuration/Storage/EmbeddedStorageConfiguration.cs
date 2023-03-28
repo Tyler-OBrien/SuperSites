@@ -12,6 +12,9 @@ public class EmbeddedStorageConfiguration : IStorageConfiguration
 
     public static string Type => "Embedded";
     public List<string> AllowedFileExtensions { get; set; }
+    public List<string> DisallowFileExtensions { get; set; }
+    public List<string> IncludePaths { get; set; }
+    public List<string> ExcludePaths { get; set; }
     public long FileSizeLimit { get; set; }
 
     public bool Validate()

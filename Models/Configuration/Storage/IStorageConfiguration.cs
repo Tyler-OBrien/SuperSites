@@ -25,6 +25,12 @@ namespace CloudflareWorkerBundler.Models.Configuration.Storage
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
         public static string Type { get; }
         public List<string> AllowedFileExtensions { get; set; }
+
+        public List<string> DisallowFileExtensions { get; set; }
+
+        public List<string> IncludePaths { get; set; }
+
+        public List<string> ExcludePaths { get; set; }
         public long FileSizeLimit { get; set; }
     }
 }

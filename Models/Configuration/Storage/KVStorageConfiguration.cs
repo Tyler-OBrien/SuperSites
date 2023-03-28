@@ -26,6 +26,9 @@ public class KvStorageConfiguration : IStorageConfiguration
     [JsonIgnore] public string StorageID => NamespaceId;
     public static string Type => "KV";
     public List<string> AllowedFileExtensions { get; set; }
+    public List<string> DisallowFileExtensions { get; set; }
+    public List<string> IncludePaths { get; set; }
+    public List<string> ExcludePaths { get; set; }
     public long FileSizeLimit { get; set; }
 
 
