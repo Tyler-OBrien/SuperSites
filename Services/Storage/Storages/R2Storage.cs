@@ -51,10 +51,9 @@ public class R2Storage : IGenericStorage
     public async Task<bool> Delete(string objectName)
     {
         if (_baseConfiguration.DryRun == false)
-        {
-            var response = await _minioService.DeleteFile(objectName, _configuration.AccountId,
+        { 
+            await _minioService.DeleteFile(objectName, _configuration.AccountId,
                 _configuration.AccessKey, _configuration.SecretKey, _configuration.BucketName, CancellationToken.None);
-           
         }
 
         _logger.LogInformation($"Deleted {objectName} from R2");
