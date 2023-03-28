@@ -195,7 +195,6 @@ Preload();";
             await _manifestService.SaveManifest();
             _logger.LogInformation($"Uploaded new Manifest, manifest now contains {_manifestService.Manifest.Deployments.Count} Deployments");
             // Clean up time!
-            await _manifestService.CleanUpFiles(storages);
         }
         var storageInfoStringBuilder = new StringBuilder();
 
