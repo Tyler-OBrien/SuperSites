@@ -30,8 +30,10 @@ public class BaseConfiguration : IBaseConfiguration
     public List<IStorageConfiguration> StorageConfigurations { get; set; }
 
     // Any more then this get pruned, and their assets removed. 
+    [ConfigurationEnvironmentVariableProperty("MAX_MANIFEST_COUNT")]
     public int MaxManifestCount { get; set; }
 
+    [ConfigurationEnvironmentVariableProperty("USE_ETAGS")]
     public bool ETags { get; set; }
 
 
@@ -88,6 +90,7 @@ public class BaseConfiguration : IBaseConfiguration
             };
             await File.WriteAllTextAsync(ConfigName,
                 JsonSerializer.Serialize(defaultConfig, seralizationConfiguration));
+            throw new InvalidOperationException($"Config has been generated, named {ConfigName}, customize it now!");
         }
 
         var tryLoadConfig = await File.ReadAllTextAsync(ConfigName);
