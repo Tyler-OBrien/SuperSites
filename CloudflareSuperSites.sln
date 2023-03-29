@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudflareWorkerBundler", "CloudflareWorkerBundler.csproj", "{D8F1FDA5-0369-4491-8BF3-C488FFD56332}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CloudflareSuperSites", "CloudflareSuperSites.csproj", "{D8F1FDA5-0369-4491-8BF3-C488FFD56332}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

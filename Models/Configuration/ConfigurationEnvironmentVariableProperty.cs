@@ -1,4 +1,4 @@
-﻿namespace CloudflareWorkerBundler.Models.Configuration;
+﻿namespace CloudflareSuperSites.Models.Configuration;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class ConfigurationEnvironmentVariableProperty : Attribute

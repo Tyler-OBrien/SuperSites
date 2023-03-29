@@ -1,17 +1,16 @@
-﻿using System.Diagnostics;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Manifest;
-using CloudflareWorkerBundler.Models.Middleware;
-using CloudflareWorkerBundler.Services.Manifest;
-using CloudflareWorkerBundler.Services.Middleware;
-using CloudflareWorkerBundler.Services.Router;
-using CloudflareWorkerBundler.Services.Storage;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Manifest;
+using CloudflareSuperSites.Models.Middleware;
+using CloudflareSuperSites.Services.Manifest;
+using CloudflareSuperSites.Services.Middleware;
+using CloudflareSuperSites.Services.Router;
+using CloudflareSuperSites.Services.Storage;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Bundler;
+namespace CloudflareSuperSites.Services.Bundler;
 
 public class FileBundler : IFileBundler
 {

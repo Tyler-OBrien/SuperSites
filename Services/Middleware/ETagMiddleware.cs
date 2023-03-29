@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Middleware;
-using CloudflareWorkerBundler.Services.Router;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Middleware;
+using CloudflareSuperSites.Services.Router;
 
-namespace CloudflareWorkerBundler.Services.Middleware;
+namespace CloudflareSuperSites.Services.Middleware;
 
 public class ETagMiddleware : IBaseMiddleware
 {

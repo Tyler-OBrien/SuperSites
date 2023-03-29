@@ -1,14 +1,14 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
-using CloudflareWorkerBundler.Broker;
-using CloudflareWorkerBundler.Extensions;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Services.Bundler;
-using CloudflareWorkerBundler.Services.Manifest;
-using CloudflareWorkerBundler.Services.Minio;
-using CloudflareWorkerBundler.Services.Router;
-using CloudflareWorkerBundler.Services.Storage;
+using CloudflareSuperSites.Broker;
+using CloudflareSuperSites.Extensions;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Services.Bundler;
+using CloudflareSuperSites.Services.Manifest;
+using CloudflareSuperSites.Services.Minio;
+using CloudflareSuperSites.Services.Router;
+using CloudflareSuperSites.Services.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
@@ -16,7 +16,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace CloudflareWorkerBundler;
+namespace CloudflareSuperSites;
 
 public static class Program
 {

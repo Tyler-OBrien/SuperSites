@@ -1,11 +1,10 @@
-﻿using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Services.Bundler;
-using System.CommandLine;
-using CloudflareWorkerBundler.Services.Manifest;
-using CloudflareWorkerBundler.Services.Storage;
+﻿using System.CommandLine;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Services.Manifest;
+using CloudflareSuperSites.Services.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Commands;
+namespace CloudflareSuperSites.Commands;
 
 public class CleanupCommand : Command
 {

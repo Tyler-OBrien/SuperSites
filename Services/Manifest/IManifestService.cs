@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CloudflareWorkerBundler.Models.Manifest;
-using CloudflareWorkerBundler.Services.Storage;
+﻿using CloudflareSuperSites.Models.Manifest;
+using CloudflareSuperSites.Services.Storage;
 
-namespace CloudflareWorkerBundler.Services.Manifest
+namespace CloudflareSuperSites.Services.Manifest
 {
     public interface IManifestService
     {

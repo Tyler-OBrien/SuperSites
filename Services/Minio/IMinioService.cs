@@ -1,13 +1,4 @@
-﻿using CloudflareWorkerBundler.Models.Configuration.Storage;
-using Minio.Exceptions;
-using Minio;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CloudflareWorkerBundler.Services.Minio
+﻿namespace CloudflareSuperSites.Services.Minio
 {
     public interface IMinioService
     {

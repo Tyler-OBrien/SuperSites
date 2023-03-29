@@ -1,6 +1,6 @@
-﻿using CloudflareWorkerBundler.Models.CloudflareAPI;
+﻿using CloudflareSuperSites.Models.CloudflareAPI;
 
-namespace CloudflareWorkerBundler.Broker;
+namespace CloudflareSuperSites.Broker;
 
 public partial interface ICloudflareApiBroker
 {

@@ -1,6 +1,6 @@
-﻿using CloudflareWorkerBundler.Models.CloudflareAPI;
+﻿using CloudflareSuperSites.Models.CloudflareAPI;
 
-namespace CloudflareWorkerBundler.Broker;
+namespace CloudflareSuperSites.Broker;
 
 // THIS IS THE OLD IMPLEMENTATION, NOW USING minio
 public partial interface ICloudflareApiBroker

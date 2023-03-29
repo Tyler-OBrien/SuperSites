@@ -1,6 +1,6 @@
-﻿using CloudflareWorkerBundler.Models.Configuration;
+﻿using CloudflareSuperSites.Models.Configuration;
 
-namespace CloudflareWorkerBundler.Extensions;
+namespace CloudflareSuperSites.Extensions;
 
 public static class ResolveConfigurationEnvironmentVariables
 {

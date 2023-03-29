@@ -1,7 +1,6 @@
-﻿using System.Text.Json.Serialization;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
+﻿using CloudflareSuperSites.Models.Configuration.Storage;
 
-namespace CloudflareWorkerBundler.Models.Configuration;
+namespace CloudflareSuperSites.Models.Configuration;
 
 public interface IBaseConfiguration
 {

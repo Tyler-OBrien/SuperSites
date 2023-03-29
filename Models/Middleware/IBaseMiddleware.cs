@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Services.Router;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Services.Router;
 
-namespace CloudflareWorkerBundler.Models.Middleware;
+namespace CloudflareSuperSites.Models.Middleware;
 
 public interface IBaseMiddleware
 {

@@ -1,6 +1,6 @@
-﻿using CloudflareWorkerBundler.Models.Configuration.Storage;
+﻿using CloudflareSuperSites.Models.Configuration.Storage;
 
-namespace CloudflareWorkerBundler.Services.Storage;
+namespace CloudflareSuperSites.Services.Storage;
 
 public interface IStorageCreatorService
 {

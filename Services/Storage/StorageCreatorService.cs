@@ -1,12 +1,9 @@
-﻿using CloudflareWorkerBundler.Broker;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
-using CloudflareWorkerBundler.Services.Minio;
-using CloudflareWorkerBundler.Services.Storage.Storages;
+﻿using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Configuration.Storage;
+using CloudflareSuperSites.Services.Storage.Storages;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Storage;
+namespace CloudflareSuperSites.Services.Storage;
 
 public class StorageCreatorService : IStorageCreatorService
 {

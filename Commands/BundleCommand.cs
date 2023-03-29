@@ -1,9 +1,8 @@
 ﻿using System.CommandLine;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Services.Bundler;
-using CloudflareWorkerBundler.Services.Router;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Services.Bundler;
 
-namespace CloudflareWorkerBundler.Commands;
+namespace CloudflareSuperSites.Commands;
 
 public class BundleCommand : Command
 {

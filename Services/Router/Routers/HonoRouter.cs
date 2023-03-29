@@ -1,9 +1,8 @@
 ﻿using System.Text;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Manifest;
+using CloudflareSuperSites.Models.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Router.Routers;
+namespace CloudflareSuperSites.Services.Router.Routers;
 
 public class HonoRouter : IRouter
 {

@@ -1,4 +1,4 @@
-﻿namespace CloudflareWorkerBundler.Services.Router;
+﻿namespace CloudflareSuperSites.Services.Router;
 
 public interface IRouterCreatorService
 {

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace CloudflareWorkerBundler.Models.Configuration.Storage;
+namespace CloudflareSuperSites.Models.Configuration.Storage;
 
 [RequiresUnreferencedCode("")]
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]

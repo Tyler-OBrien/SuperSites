@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using CloudflareWorkerBundler.Extensions;
-using CloudflareWorkerBundler.Models.CloudflareAPI;
+using CloudflareSuperSites.Extensions;
+using CloudflareSuperSites.Models.CloudflareAPI;
 
-namespace CloudflareWorkerBundler.Broker;
+namespace CloudflareSuperSites.Broker;
 
 public partial class CloudflareApiBroker
 {

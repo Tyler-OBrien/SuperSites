@@ -1,4 +1,4 @@
-﻿namespace CloudflareWorkerBundler.Models.Configuration;
+﻿namespace CloudflareSuperSites.Models.Configuration;
 
 public class StorageResponse
 {

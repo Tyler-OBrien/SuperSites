@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CloudflareWorkerBundler.Services.Storage;
+﻿using CloudflareSuperSites.Services.Storage;
 
-namespace CloudflareWorkerBundler.Models.Manifest
+namespace CloudflareSuperSites.Models.Manifest
 {
     public class Deployment
     {

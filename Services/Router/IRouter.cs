@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace CloudflareWorkerBundler.Services.Router;
+namespace CloudflareSuperSites.Services.Router;
 
 public interface IRouter
 {

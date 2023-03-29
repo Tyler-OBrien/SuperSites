@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using CloudflareWorkerBundler.Extensions;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
+using CloudflareSuperSites.Extensions;
+using CloudflareSuperSites.Models.Configuration.Storage;
 
-namespace CloudflareWorkerBundler.Models.Configuration;
+namespace CloudflareSuperSites.Models.Configuration;
 
 public class BaseConfiguration : IBaseConfiguration
 {

@@ -1,8 +1,8 @@
-﻿using CloudflareWorkerBundler.Extensions;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using CloudflareSuperSites.Extensions;
 
-namespace CloudflareWorkerBundler.Models.Configuration.Storage;
+namespace CloudflareSuperSites.Models.Configuration.Storage;
 
 [RequiresUnreferencedCode("")]
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]

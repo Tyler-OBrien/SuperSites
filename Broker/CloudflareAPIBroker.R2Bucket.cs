@@ -1,8 +1,8 @@
-﻿using CloudflareWorkerBundler.Extensions;
-using CloudflareWorkerBundler.Models.CloudflareAPI;
-using System.Net;
+﻿using System.Net;
+using CloudflareSuperSites.Extensions;
+using CloudflareSuperSites.Models.CloudflareAPI;
 
-namespace CloudflareWorkerBundler.Broker;
+namespace CloudflareSuperSites.Broker;
 
 // This is all undocumented superrr scary API, ripped from Wrangler
 // THIS IS THE OLD IMPLEMENTATION, NOW USING minio

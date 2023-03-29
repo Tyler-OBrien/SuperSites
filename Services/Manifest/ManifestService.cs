@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Manifest;
-using CloudflareWorkerBundler.Services.Storage;
+﻿using System.Text.Json;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Manifest;
+using CloudflareSuperSites.Services.Storage;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Manifest
+namespace CloudflareSuperSites.Services.Manifest
 {
     public class ManifestService : IManifestService
     {

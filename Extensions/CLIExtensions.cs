@@ -2,7 +2,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CloudflareWorkerBundler.Extensions;
+namespace CloudflareSuperSites.Extensions;
 
 //https://endjin.com/blog/2020/09/simple-pattern-for-using-system-commandline-with-dependency-injection
 public static class CliCommandCollectionExtensions

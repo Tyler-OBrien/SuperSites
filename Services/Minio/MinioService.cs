@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
+﻿using System.Text;
 using Minio;
-using Minio.DataModel;
 using Minio.Exceptions;
 
-namespace CloudflareWorkerBundler.Services.Minio
+namespace CloudflareSuperSites.Services.Minio
 {
     public class MinioService : IMinioService
     {

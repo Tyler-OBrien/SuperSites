@@ -1,9 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
+using CloudflareSuperSites.Models.Configuration.Storage;
 
-namespace CloudflareWorkerBundler.Extensions;
+namespace CloudflareSuperSites.Extensions;
 
 // Adapted from:
 // https://stackoverflow.com/a/59785679

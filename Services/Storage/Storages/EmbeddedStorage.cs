@@ -1,9 +1,9 @@
-﻿using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
-using CloudflareWorkerBundler.Services.Router;
+﻿using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Configuration.Storage;
+using CloudflareSuperSites.Services.Router;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Storage.Storages;
+namespace CloudflareSuperSites.Services.Storage.Storages;
 
 public class EmbeddedStorage : IGenericStorage
 {

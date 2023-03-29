@@ -1,8 +1,8 @@
-﻿using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Models.Configuration.Storage;
-using CloudflareWorkerBundler.Services.Router;
+﻿using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Models.Configuration.Storage;
+using CloudflareSuperSites.Services.Router;
 
-namespace CloudflareWorkerBundler.Services.Storage;
+namespace CloudflareSuperSites.Services.Storage;
 
 public interface IGenericStorage
 {

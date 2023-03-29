@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using CloudflareWorkerBundler.Models.CloudflareAPI;
+using CloudflareSuperSites.Models.CloudflareAPI;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Extensions;
+namespace CloudflareSuperSites.Extensions;
 
 public static class HttpExtensions
 {

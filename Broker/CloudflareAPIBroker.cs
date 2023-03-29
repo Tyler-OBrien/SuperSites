@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Broker;
+namespace CloudflareSuperSites.Broker;
 
 public partial class CloudflareApiBroker : ICloudflareApiBroker
 {

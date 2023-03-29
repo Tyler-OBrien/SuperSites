@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using CloudflareWorkerBundler.Models.Configuration;
+using CloudflareSuperSites.Models.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Router.Routers;
+namespace CloudflareSuperSites.Services.Router.Routers;
 
 public class VanillaRouter : IRouter
 {

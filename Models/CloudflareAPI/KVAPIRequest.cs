@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CloudflareWorkerBundler.Models.CloudflareAPI;
+namespace CloudflareSuperSites.Models.CloudflareAPI;
 
 public class WriteKvBulkItem
 {

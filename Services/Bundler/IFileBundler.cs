@@ -1,4 +1,4 @@
-﻿namespace CloudflareWorkerBundler.Services.Bundler;
+﻿namespace CloudflareSuperSites.Services.Bundler;
 
 public interface IFileBundler
 {

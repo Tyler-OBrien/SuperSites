@@ -1,9 +1,9 @@
-﻿using CloudflareWorkerBundler.Broker;
-using CloudflareWorkerBundler.Models.Configuration;
-using CloudflareWorkerBundler.Services.Router.Routers;
+﻿using CloudflareSuperSites.Broker;
+using CloudflareSuperSites.Models.Configuration;
+using CloudflareSuperSites.Services.Router.Routers;
 using Microsoft.Extensions.Logging;
 
-namespace CloudflareWorkerBundler.Services.Router;
+namespace CloudflareSuperSites.Services.Router;
 
 public class RouterCreatorService : IRouterCreatorService
 {
