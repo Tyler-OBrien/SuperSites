@@ -20,22 +20,22 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="CloudflareWorkerBundler-$tag-${{ matrix.target }}"
+          release_name="CloudflareSuperSites-$tag-${{ matrix.target }}"
           # Build everything
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-x64"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-x64
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-arm"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-arm
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-arm64"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-arm64
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-x64"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-x64.exe
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-x86"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-x86.exe
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-arm64"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-arm64.exe
-          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "osx-x64"  -c Release -o "output"
-          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-osx-x64
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "linux-x64"  -c Release -o "output"
+          mv output/CloudflareSuperSites output/CloudflareSuperSites-$tag-linux-x64
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "linux-arm"  -c Release -o "output"
+          mv output/CloudflareSuperSites output/CloudflareSuperSites-$tag-linux-arm
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "linux-arm64"  -c Release -o "output"
+          mv output/CloudflareSuperSites output/CloudflareSuperSites-$tag-linux-arm64
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "win-x64"  -c Release -o "output"
+          mv output/CloudflareSuperSites.exe output/CloudflareSuperSites-$tag-win-x64.exe
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "win-x86"  -c Release -o "output"
+          mv output/CloudflareSuperSites.exe output/CloudflareSuperSites-$tag-win-x86.exe
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "win-arm64"  -c Release -o "output"
+          mv output/CloudflareSuperSites.exe output/CloudflareSuperSites-$tag-win-arm64.exe
+          dotnet publish "CloudflareSuperSites.sln" --sc --runtime "osx-x64"  -c Release -o "output"
+          mv output/CloudflareSuperSites output/CloudflareSuperSites-$tag-osx-x64
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
