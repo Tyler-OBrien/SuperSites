@@ -1,4 +1,4 @@
-# CloudflareSuperSites - Work in Progress 
+# SuperSites - Work in Progress 
 Bundle up an entire directory, and distribute it across Cloudflare's range of products, including embedded in the Worker, KV, and R2! 
 
 This uploads the necessary files & outputs a functional Cloudflare Worker, either using Hono, the web framework/router, or Vanilla, just processing the normal fetch event ourselves.
@@ -10,7 +10,8 @@ This uploads the necessary files & outputs a functional Cloudflare Worker, eithe
 ## How
 * Download the executable (or build it), and run it once. It will generate a bundleconfig.json for you to configure
 * Set up the storages / etc you want to use. You can have multiple of the same storage if you want different settings
-* Run it again, and it will output a usable worker. Deploy the worker! If you want to set up CI/CD (not that I would recommend it, this may upload junk/a broken script): [check here!](https://github.com/Tyler-OBrien/personal_website/blob/master/.github/workflows/cloudflare_bundler_deploy.yml)
+* Run the script with bundle (i.e ./CloudflareSuperSites bundle), and it will output a (hopefully) usable worker. Deploy the worker via Wrangler (wrangler publish)! If you want to set up CI/CD (not that I would recommend it, this may upload junk/a broken script): [check here!](https://github.com/Tyler-OBrien/personal_website/blob/master/.github/workflows/cloudflare_bundler_deploy.yml)
+* You can use the clean up command (./CLoudflareSuperSites cleanup) with a manifest storage provider configured to clean up old files & manifests.
 ## Show
 
 
@@ -40,6 +41,7 @@ https://user-images.githubusercontent.com/94197210/228124997-843cd937-4fee-4232-
 | ExcludePaths | File paths that are not allowed in this configuration | List of strings
 | FileSizeLimit | Max file size in bytes | long
 | CacheSeconds | Seconds to cache the item for. If Specified, it is cached in the CF Worker Cache API. Not supported for Embedded. | int
+
 Notes:
 * These must all match for the asset to be included. For example, if you specify to include the file path /cookies/, and only HTML file extensions are allowed, it must match both
 * Include Paths based on the case-insentive Start of the relative path. For example, if your website is example.com, and you have a path at example.com/cookies/, IncludePaths /cookies/ would match any assets under that path
@@ -49,7 +51,7 @@ There are no unique embedded storage configuration options, just the base storag
 ### KV Storage Configuration
 | Name | Use | Environment Variable | Type
 | ------------- | ------------------ | -------- | -------
-| ApiToken | Cloudflare API Token  | CLOUDFLARE_API_TOKEN | string
+| ApiToken | Cloudflare API Token, needs KV Edit Permissions  | CLOUDFLARE_API_TOKEN | string
 | ACCOUNTID | Cloudflare Account Id  | ACCOUNTID | string
 | NamespaceId | KV Namespace Id  | | string
 | BindingName | Name of the KV Binding (in your wrangler.toml, or use the generated one)  | | string
@@ -63,3 +65,61 @@ There are no unique embedded storage configuration options, just the base storag
 | BindingName | Name of the KV Binding (in your wrangler.toml, or use the generated one)  | | string
 
 Why the S3 API Keys? We use [Minio](https://github.com/minio/minio-dotnet) under the hood, there's no offical CF API for R2, and the unofficial one has an upload limit of ~100 MB (as does the entire API!). There are bits of code left for using the unofficial API, if you see them in the source.
+
+
+Todo:
+
+* Tests
+* Maybe Tests with unstable_dev/the worker itself?
+* Support for serving old assets (could force uploading all to a persistent data store, and re-creating routes based on the manifest)
+
+
+Full Configuration Example:
+
+```json
+{
+   "BundleDirectory":"../public", # Relative or Exact Directory
+   "OutputLocation":"worker/worker.js", # Relative or Exact File Path
+   "Router":"Vanilla", # Vanilla or Hono
+   "StorageConfigurations":[  # Repeat mutiple of the same type or exact same namespaceid/bucket name if you want.
+      {
+         "Type":"Embedded",
+         "AllowedFileExtensions":[
+            "html",
+            "css",
+            "js"
+         ],
+         "FileSizeLimit":200000
+      },
+      {
+         "Type":"KV",
+         "FileSizeLimit":10000000,
+         "ApiToken":"...", # Use Environment Variables if your environment supports it. KV needs KV Edit Permissions
+         "AccountId":"...",
+         "NamespaceId":"...",
+         "BindingName":"KV",
+      },
+      {
+         "Type":"R2",
+         "AccessKey":"...", # R2 S3 API Keys
+         "SecretKey":"...",
+         "AccountId":"...",
+         "BucketName":"main-website",
+         "BindingName":"R2",
+      }
+   ],
+   "MaxManifestCount":3,
+   "ManifestStorageConfiguration":{ # Not Required, if you don't care about leaving files for old deploys behind/leaving unused files in storage
+      "BucketName":"main-website-manifest",
+      "AccessKey":"...",
+      "SecretKey":"...",
+      "AccountId":"...",
+      "Type":"R2",
+      "BindingName":"R2",
+      
+   }
+}
+```
+
+
+Example Site using Super Sites: https://tylerobrien.dev
