@@ -25,12 +25,12 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="CloudflareWorkerBundler-$tag-${{ matrix.target }}"
+          release_name="CloudflareSuperSites-$tag-${{ matrix.target }}"
           # Build everything
-           dotnet publish CloudflareWorkerBundler.sln --sc --runtime ${{ matrix.target }}  -c Release -o "output"
+           dotnet publish CloudflareSuperSites.sln --sc --runtime ${{ matrix.target }}  -c Release -o "output"
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "output/CloudflareWorkerBundler*"
+          files: "output/CloudflareSuperSites*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
