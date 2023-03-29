@@ -168,7 +168,7 @@ Preload();";
                     trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
 
             if (relativePath.Equals("", StringComparison.CurrentCultureIgnoreCase))
-                routerToUse.Add404Route(routerStringBuilder, fileHash, responseCode, trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
+                routerToUse.AddIndexHtml(routerStringBuilder, fileHash, responseCode, trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
 
             if (string.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
                 preloadCodes.Add(tryPutFile.PreloadCode);
