@@ -1,10 +1,11 @@
 # SuperSites - Work in Progress 
 Bundle up an entire directory, and distribute it across Cloudflare's range of products, including embedded in the Worker, KV, and R2! 
 
-This uploads the necessary files & outputs a functional Cloudflare Worker, either using Hono, the web framework/router, or Vanilla, handling the fetch event ourselves with no extra packages.
+This uploads the necessary files & outputs a functional Cloudflare Worker that handles routing to the uploaded assets. You can use use Hono, the web framework/router, or Vanilla, handling the fetch event ourselves with no extra packages.
 ## Why
 * If you don't have assets over KV/Cloudflare Page's limit of 25 MB, you probably are better off just using Cloudflare Pages, or Worker Sites. 
-* If you do have assets over KV's limit, or want to exclusively use R2, then this allows you to upload a static directory anywhere
+* If you do have assets over KV's limit, or want to exclusively use R2, then this allows you to upload a static directory anywhere.
+* If you want to spread your assets out by size / directory / extension across KV and R2, even multiple buckets/namespaces, without having to manage it yourself.
 * This also lets you (optionally) embed assets inside of the worker itself, base64 encoded. The ultimate unnecessary speed boost.
 * Lastly, this optionally supports a "Manifest", keeping track of all old uploads, and removing unused files. We use this for avoiding uploading the same file twice, and also to keep assets around for a few versions (MaxManifestCount, default 3), in case your worker deployment goes wrong/worker propagation is slow and your old scripts are still around.
 ## How
