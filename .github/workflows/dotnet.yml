@@ -8,9 +8,6 @@ on:
 jobs:
   release:
     name: Release
-    strategy:
-      matrix:
-        runtime: ['linux-x64', 'linux-arm', 'linux-arm64', 'win-x64', 'win-x86', 'win-arm64', 'osx-x64']
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,18 +16,30 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.x
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="CloudflareSuperSites-$tag-${{ matrix.target }}"
+          release_name="CloudflareWorkerBundler-$tag-${{ matrix.target }}"
           # Build everything
-           dotnet publish CloudflareSuperSites.sln --sc --runtime ${{ matrix.target }}  -c Release -o "output"
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-x64"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-x64
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-arm"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-arm
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "linux-arm64"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-linux-arm64
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-x64"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-x64.exe
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-x86"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-x86.exe
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "win-arm64"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler.exe output/CloudflareWorkerBundler-$tag-win-arm64.exe
+          dotnet publish "CloudflareWorkerBundler.sln" --sc --runtime "osx-x64"  -c Release -o "output"
+          mv output/CloudflareWorkerBundler output/CloudflareWorkerBundler-$tag-osx-x64
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "output/CloudflareSuperSites*"
+          files: "output/*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
