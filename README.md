@@ -1,15 +1,15 @@
 # SuperSites - Work in Progress 
 Bundle up an entire directory, and distribute it across Cloudflare's range of products, including embedded in the Worker, KV, and R2! 
 
-This uploads the necessary files & outputs a functional Cloudflare Worker, either using Hono, the web framework/router, or Vanilla, just processing the normal fetch event ourselves.
+This uploads the necessary files & outputs a functional Cloudflare Worker, either using Hono, the web framework/router, or Vanilla, handling the fetch event ourselves with no extra packages.
 ## Why
 * If you don't have assets over KV/Cloudflare Page's limit of 25 MB, you probably are better off just using Cloudflare Pages, or Worker Sites. 
-* If you do have assets over KV's limit, or want to exclusively use R2, or KV's pricing is too expensive, then this allows you to upload a static directory anywhere
+* If you do have assets over KV's limit, or want to exclusively use R2, then this allows you to upload a static directory anywhere
 * This also lets you (optionally) embed assets inside of the worker itself, base64 encoded. The ultimate unnecessary speed boost.
 * Lastly, this optionally supports a "Manifest", keeping track of all old uploads, and removing unused files. We use this for avoiding uploading the same file twice, and also to keep assets around for a few versions (MaxManifestCount, default 3), in case your worker deployment goes wrong/worker propagation is slow and your old scripts are still around.
 ## How
-* Download the executable (or build it), and run it once. It will generate a bundleconfig.json for you to configure
-* Set up the storages / etc you want to use. You can have multiple of the same storage if you want different settings
+* Download the executable (or build it), and run it once. It will generate a bundleconfig.json for you to configure. 
+* Set up the storages / etc you want to use. You can have multiple of the same storage if you want different settings. See the configurations below, or the full configuration example below.
 * Run the script with bundle (i.e ./CloudflareSuperSites bundle), and it will output a (hopefully) usable worker. Deploy the worker via Wrangler (wrangler publish)! If you want to set up CI/CD (not that I would recommend it, this may upload junk/a broken script): [check here!](https://github.com/Tyler-OBrien/personal_website/blob/master/.github/workflows/cloudflare_bundler_deploy.yml)
 * You can use the clean up command (./CLoudflareSuperSites cleanup) with a manifest storage provider configured to clean up old files & manifests.
 ## Show
@@ -107,17 +107,17 @@ Full Configuration Example:
          "AccountId":"...",
          "BucketName":"main-website",
          "BindingName":"R2",
+         "CacheSeconds": 3600
       }
    ],
    "MaxManifestCount":3,
    "ManifestStorageConfiguration":{ # Not Required, if you don't care about leaving files for old deploys behind/leaving unused files in storage
+      "Type":"R2",
       "BucketName":"main-website-manifest",
       "AccessKey":"...",
       "SecretKey":"...",
       "AccountId":"...",
-      "Type":"R2",
       "BindingName":"R2",
-      
    }
 }
 ```
