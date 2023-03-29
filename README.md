@@ -1,4 +1,4 @@
-# CloudflareWorkerBundler - Work in Progress (because I can't think of a better name)
+# CloudflareSuperSites - Work in Progress 
 Bundle up an entire directory, and distribute it across Cloudflare's range of products, including embedded in the Worker, KV, and R2! 
 
 This uploads the necessary files & outputs a functional Cloudflare Worker, either using Hono, the web framework/router, or Vanilla, just processing the normal fetch event ourselves.
