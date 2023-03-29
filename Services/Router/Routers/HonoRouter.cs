@@ -35,6 +35,8 @@ const app = new Hono()";
 
     public string? Route404 { get; set; } = null;
 
+    public string? IndexHtml { get; set; } = null;
+
 
     public void Begin(StringBuilder stringBuilder, bool fullWorker, bool useCache)
     {
@@ -57,8 +59,10 @@ const app = new Hono()";
             cacheStr = $" , cache({{ cacheName: '{deploymentId}', cacheControl: 'max-age={cacheSeconds}', }})";
         }
 
-        stringBuilder.AppendLine(
-            $"app.on(['GET', 'HEAD'],'/{relativePath}'{cacheStr}, async (c) => {{ {responseCode} return response;  }})");
+        var responseStr =
+            $"app.on(['GET', 'HEAD'],'/{relativePath}'{cacheStr}, async (c) => {{ {responseCode} return response;  }})";
+
+        stringBuilder.AppendLine(responseStr);
     }
 
     public void Add404Route(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds, string deploymentId)
@@ -72,8 +76,31 @@ const app = new Hono()";
             $"app.on(['GET', 'HEAD'],'*'{cacheStr}, async (c) => {{ {responseCode} return response; }})");
     }
 
+    public void AddIndexHtml(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds, string deploymentId)
+    {
+        string cacheStr = "";
+        if (cacheSeconds is > 0)
+        {
+            cacheStr = $" , cache({{ cacheName: '{deploymentId}', cacheControl: 'max-age={cacheSeconds}', }})";
+        }
+        IndexHtml = (
+            $"app.on(['GET', 'HEAD'],'*'{cacheStr}, async (c) => {{ {responseCode} return response; }})");
+    }
+
     public void End(StringBuilder stringBuilder, bool fullWorker, bool useCache)
     {
+
+        if (Route404 != null)
+        {
+            _logger.LogInformation($"Has 404 Route");
+            stringBuilder.AppendLine(Route404);
+        }
+        else
+        {
+            _logger.LogInformation("No 404 Fallback Path Found. Assuming SPA, redirecting to index.html...");
+            stringBuilder.AppendLine(IndexHtml);
+        }
+
         if (Route404 != null)
         {
             stringBuilder.AppendLine(Route404);

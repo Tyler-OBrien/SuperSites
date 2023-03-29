@@ -162,18 +162,23 @@ Preload();";
             _logger.LogInformation(
                 $"Adding route for {relativePath}, using {trySelectStorage.Configuration.InstanceType}");
 
-            if (relativePath.Equals("404.html", StringComparison.OrdinalIgnoreCase))
+            if (relativePath.Equals("404.html", StringComparison.CurrentCultureIgnoreCase))
                 routerToUse.Add404Route(routerStringBuilder, fileHash,
                     $"let response = new Response({tryPutFile.GenerateResponseCode}, {{ status: 404, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});",
                     trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
+
+            if (relativePath.Equals("", StringComparison.CurrentCultureIgnoreCase))
+                routerToUse.Add404Route(routerStringBuilder, fileHash, responseCode, trySelectStorage.Configuration.CacheSeconds, newDeployment?.ID);
 
             if (string.IsNullOrWhiteSpace(tryPutFile.PreloadCode) == false)
                 preloadCodes.Add(tryPutFile.PreloadCode);
         }
 
+
+
+
         foreach (var storage in storages)
             await storage.FinalizeChanges();
-
 
         routerToUse.End(routerStringBuilder, true, useCache);
 
@@ -228,10 +233,11 @@ Preload();";
 
     public string GetRelativePath(FileInfo file, DirectoryInfo baseDirectory)
     {
+        
         var cleanedFilePath = file.FullName.Replace(baseDirectory.FullName, "").TrimStart('\\').Replace("\\", "/");
-        if (cleanedFilePath.EndsWith(IndexHtml))
+        if (cleanedFilePath.EndsWith(IndexHtml, StringComparison.CurrentCultureIgnoreCase))
         {
-            var lastIndexOf = cleanedFilePath.LastIndexOf(IndexHtml);
+            var lastIndexOf = cleanedFilePath.LastIndexOf(IndexHtml, StringComparison.CurrentCultureIgnoreCase);
             if (lastIndexOf != -1)
                 cleanedFilePath = cleanedFilePath.Remove(lastIndexOf, IndexHtml.Length);
         }

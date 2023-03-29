@@ -20,7 +20,8 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
     private readonly IBaseConfiguration _baseConfiguration;
     private readonly ILogger _logger;
 
-    private VanillaRouterRoute Route404;
+    private VanillaRouterRoute? Route404 = null;
+    private VanillaRouterRoute? IndexHtml = null;
 
     private readonly List<VanillaRouterRoute> Routes = new();
 
@@ -74,12 +75,26 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
     {
         if (cacheSeconds is > 0)
         {
-            Route404 = new VanillaRouterRoute { ResponseCode = GenerateCacheResponse(fileHash, responseCode) };
+            Route404 = new VanillaRouterRoute { ResponseCode = GenerateCacheResponse(fileHash, responseCode), FileHash = fileHash, Path = "404.html"};
 
         }
         else
         {
-            Route404 = new VanillaRouterRoute { ResponseCode = responseCode + "return response;" };
+            Route404 = new VanillaRouterRoute { ResponseCode = responseCode + "return response;", FileHash = fileHash};
+        }
+    }
+
+    public void AddIndexHtml(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds,
+        string deploymentId)
+    {
+        if (cacheSeconds is > 0)
+        {
+            IndexHtml = new VanillaRouterRoute { ResponseCode = GenerateCacheResponse(fileHash, responseCode), Path = "/"};
+
+        }
+        else
+        {
+            IndexHtml = new VanillaRouterRoute { ResponseCode = responseCode + "return response;" };
         }
     }
 
@@ -90,7 +105,17 @@ let path = requestedUrl.pathname.split(""/"").slice(1);
         var rootNode = tree.GetRoot();
         stringBuilder.AppendLine(VanillaHeader.Trim());
         TraverseAndAdd(stringBuilder, rootNode);
-        stringBuilder.AppendLine(Route404?.ResponseCode);
+        if (Route404 != null)
+        {
+            _logger.LogInformation($"Has 404: {Route404.FileHash}");
+            stringBuilder.AppendLine(Route404?.ResponseCode);
+        }
+        else
+        {
+            _logger.LogInformation("No 404 Fallback Path Found. Assuming SPA, redirecting to index.html...");
+            stringBuilder.AppendLine(IndexHtml?.ResponseCode);
+        }
+
         stringBuilder.AppendLine(VanillaFooter.Trim());
         _logger.LogInformation("-- Vanilla Router --");
     }

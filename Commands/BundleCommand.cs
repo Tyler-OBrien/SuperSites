@@ -40,6 +40,11 @@ public class BundleCommand : Command
                 directory = new DirectoryInfo(_baseConfiguration.BundleDirectory);
             else directory = new DirectoryInfo(Environment.CurrentDirectory);
         }
+        // We force all paths to include the slash for normalization, otherwise you can get different behavior depending on how you specify the directory
+        if (directory.FullName.EndsWith("/", StringComparison.CurrentCultureIgnoreCase) == false)
+        {
+            directory = new DirectoryInfo(directory.FullName + "/");
+        }
 
 
         // Gather all files

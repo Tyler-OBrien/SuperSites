@@ -29,6 +29,7 @@ public interface IRouter
     /// <param name="deploymentId"></param>
     public void AddRoute(StringBuilder stringBuilder, string relativePath, string fileHash, string responseCode, int? cacheSeconds, string deploymentId);
     public void Add404Route(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds, string deploymentId);
+    public void AddIndexHtml(StringBuilder stringBuilder, string fileHash, string responseCode, int? cacheSeconds, string deploymentId);
     /// <summary>
     /// The end. If your router needs to/wants to, you could keep all of the routes in memory and append them all now.
     /// </summary>
