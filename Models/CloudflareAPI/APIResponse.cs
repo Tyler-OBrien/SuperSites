@@ -39,6 +39,11 @@ public partial class APIMessage
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("message")]
     public string Message { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Code}: {Message}";
+    }
 }
 
 
