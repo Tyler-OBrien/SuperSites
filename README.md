@@ -72,6 +72,7 @@ Todo:
 * Tests
 * Maybe Tests with unstable_dev/the worker itself?
 * Support for serving old assets (could force uploading all to a persistent data store, and re-creating routes based on the manifest)
+* A Non-Full Worker mode, that outputs code that appends to your existing worker / otherwise lets you hook into it and use SuperSites alongside a normal worker (like you can use Cloudflare Worker Sites alongside a worker)
 
 
 Full Configuration Example:
