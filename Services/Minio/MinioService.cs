@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Minio;
+using Minio.DataModel.Args;
 using Minio.Exceptions;
 
 namespace CloudflareSuperSites.Services.Minio
@@ -7,7 +8,7 @@ namespace CloudflareSuperSites.Services.Minio
     public class MinioService : IMinioService
     {
 
-        private MinioClient CreateClient(string accountId, string accessKey, string secretKey)
+        private IMinioClient CreateClient(string accountId, string accessKey, string secretKey)
         {
             return new MinioClient()
                 .WithEndpoint($"{accountId}.r2.cloudflarestorage.com")
