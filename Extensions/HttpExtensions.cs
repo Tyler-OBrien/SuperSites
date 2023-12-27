@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using CloudflareSuperSites.Models;
+using System.Text.Json.Serialization;
 using CloudflareSuperSites.Models.CloudflareAPI;
 using Microsoft.Extensions.Logging;
 
@@ -7,6 +9,15 @@ namespace CloudflareSuperSites.Extensions;
 
 public static class HttpExtensions
 {
+
+    public static JsonSerializerOptions SeralizationConfiguration = new JsonSerializerOptions
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        AllowTrailingCommas = true,
+        TypeInfoResolver = SerializableRequestJsonContext.Default,
+    };
+
+
     public static async Task<TOut?> PostAsJsonAsync<TIn, TOut>(this HttpClient client, string? requestUri, TIn value,
         CancellationToken token)
         where TOut : class
@@ -20,7 +31,7 @@ public static class HttpExtensions
 
             if (string.IsNullOrWhiteSpace(rawString) == false)
             {
-                var output = JsonSerializer.Deserialize<TOut>(rawString);
+                var output = JsonSerializer.Deserialize<TOut>(rawString, SeralizationConfiguration);
                 return output;
             }
         }
@@ -52,7 +63,7 @@ public static class HttpExtensions
                 return null;
             }
 
-            var response = JsonSerializer.Deserialize<ApiResponse<TResult[], TResultInfo>>(rawString);
+            var response = JsonSerializer.Deserialize<ApiResponse<TResult[], TResultInfo>>(rawString, SeralizationConfiguration);
 
             if (response == null)
             {
@@ -113,7 +124,7 @@ public static class HttpExtensions
                 return null;
             }
 
-            var response = JsonSerializer.Deserialize<ApiResponse<TResult, TResultInfo>>(rawString);
+            var response = JsonSerializer.Deserialize<ApiResponse<TResult, TResultInfo>>(rawString, SeralizationConfiguration);
 
             if (response == null)
             {

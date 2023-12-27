@@ -46,7 +46,7 @@ public class BaseConfiguration : IBaseConfiguration
             WriteIndented = true,
             Converters = { new TypeDiscriminatorConverter() },
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-            AllowTrailingCommas = true
+            AllowTrailingCommas = true,
         };
 
         if (File.Exists(ConfigName) == false)

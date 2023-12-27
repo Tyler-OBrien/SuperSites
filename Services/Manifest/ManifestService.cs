@@ -1,4 +1,7 @@
 ﻿using System.Text.Json;
+using CloudflareSuperSites.Extensions;
+using CloudflareSuperSites.Models;
+using System.Text.Json.Serialization;
 using CloudflareSuperSites.Models.Configuration;
 using CloudflareSuperSites.Models.Manifest;
 using CloudflareSuperSites.Services.Storage;
@@ -32,6 +35,14 @@ namespace CloudflareSuperSites.Services.Manifest
                 _logger.LogInformation($"No Storage is specified for the Manifest. Aborting loading. This will slowly build up old assets in your storages, as we do not know what to delete safely.");
                 return false;
             }
+            var seralizationConfiguration = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                AllowTrailingCommas = true,
+                TypeInfoResolver = SerializableRequestJsonContext.Default,
+            };
+
+
 
             BackingStorage = _storageCreatorService.CreateSingle(_baseConfiguration.ManifestStorageConfiguration);
             var getManifest = await BackingStorage.GetFile("Manifest");
@@ -44,7 +55,7 @@ namespace CloudflareSuperSites.Services.Manifest
             }
             else
             {
-                Manifest = JsonSerializer.Deserialize<BundlerManifest>(getManifest);
+                Manifest = JsonSerializer.Deserialize<BundlerManifest>(getManifest, seralizationConfiguration);
             }
             return true;
         }
