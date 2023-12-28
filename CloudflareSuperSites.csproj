@@ -10,6 +10,9 @@
 	  <DebugType>embedded</DebugType>
 	  <PublishTrimmed>true</PublishTrimmed>
 	  <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+	  <AssemblyVersion>1.1.1</AssemblyVersion>
+	  <FileVersion>1.1.1</FileVersion>
+	  <Version>1.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
