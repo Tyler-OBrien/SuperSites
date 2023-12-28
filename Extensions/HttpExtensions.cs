@@ -14,7 +14,6 @@ public static class HttpExtensions
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         AllowTrailingCommas = true,
-        TypeInfoResolver = SerializableRequestJsonContext.Default,
     };
 
 

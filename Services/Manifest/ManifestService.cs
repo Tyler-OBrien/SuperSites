@@ -39,7 +39,6 @@ namespace CloudflareSuperSites.Services.Manifest
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
                 AllowTrailingCommas = true,
-                TypeInfoResolver = SerializableRequestJsonContext.Default,
             };
 
 

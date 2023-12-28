@@ -28,6 +28,7 @@ namespace CloudflareSuperSites.Models
     [JsonSerializable(typeof(WriteKvBulkItem))]
     [JsonSerializable(typeof(APIMessage))]
     [JsonSerializable(typeof(ApiResponse<object[], object>))]
+    [JsonSerializable(typeof(ApiResponse<object, object>))]
     [JsonSerializable(typeof(ApiResponse<KvResult[], KvResultInfo>))]
     public partial class SerializableRequestJsonContext : JsonSerializerContext
     {
