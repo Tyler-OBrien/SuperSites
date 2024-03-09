@@ -1,4 +1,6 @@
-﻿using CloudflareSuperSites.Models.Configuration;
+﻿using System.IO.Compression;
+using System.Security.Cryptography;
+using CloudflareSuperSites.Models.Configuration;
 using CloudflareSuperSites.Models.Configuration.Storage;
 using CloudflareSuperSites.Services.Router;
 using Microsoft.Extensions.Logging;
@@ -54,8 +56,10 @@ function b64toBlob(base64) {
         if (hashesUsed.Contains(fileHash) == false)
         {
             // The files here shouldn't be any larger then a 5 MB at most, otherwise they wouldn't even fit into the Embedded storage...
-            var memoryStream = new MemoryStream();
-            await value.CopyToAsync(memoryStream);
+            using var memoryStream = new MemoryStream();
+            await using (BrotliStream compressionStream = new BrotliStream(memoryStream, CompressionLevel.SmallestSize))
+                await value.CopyToAsync(compressionStream);
+
 
             newStorageResponse.GlobalCode =
                 $"let {FILE_VARIABLE_PREFIX}{fileHash} = \"{Convert.ToBase64String(memoryStream.ToArray())}\"";
@@ -65,6 +69,7 @@ function b64toBlob(base64) {
             hashesUsed.Add(fileHash);
         }
 
+        newStorageResponse.BrotliCompressed = true;
         newStorageResponse.GenerateResponseCode = $"globalThis.{FILE_VARIABLE_PREFIX}{fileHash}blob";
         return newStorageResponse;
     }

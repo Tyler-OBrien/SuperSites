@@ -9,4 +9,6 @@ public class StorageResponse
     public string PreloadCode { get; set; }
 
     public Dictionary<string, string> ResponseHeaders { get; set; } = new();
+
+    public bool BrotliCompressed { get; set; }
 }

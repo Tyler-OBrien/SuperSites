@@ -138,12 +138,17 @@ Preload();";
                 stringBuilder.AppendLine(tryPutFile.GlobalCode);
             }
 
+            if (tryPutFile.ResponseHeaders.ContainsKey("content-encoding") == false && tryPutFile.BrotliCompressed)
+            {
+                tryPutFile.ResponseHeaders.Add("content-encoding", "br");
+
+            }
 
             var headers = tryPutFile.ResponseHeaders.Select(header =>
                 $", '{header.Key.Replace("'", "\\'")}': \'{header.Value.Replace("'", "\\'")}\'").ToList();
 
             var responseCode =
-                $"let response = new Response({tryPutFile.GenerateResponseCode}, {{ status: 200, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
+                $"let response = new Response({tryPutFile.GenerateResponseCode}, {{ {(tryPutFile.BrotliCompressed ? "encodeBody: \"manual\", " : "")} status: 200, headers: {{ 'Content-Type': '{contentType}' {string.Join("", headers)} }}}});";
 
             var responseMiddlewareStringBuilder = new StringBuilder();
             // Middleware is WIP, still thinking about how exactly it should interact with responses
